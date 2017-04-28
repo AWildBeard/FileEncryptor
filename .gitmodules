@@ -1,0 +1,3 @@
+[submodule "cryptoUtils"]
+	path = cryptoUtils
+	url = https://AWildBeard@gitlab.nullout.com/AWildBeard/cryptoUtils.git
