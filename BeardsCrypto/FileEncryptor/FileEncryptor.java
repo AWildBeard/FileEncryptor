@@ -14,9 +14,7 @@
  * limitations under the License.
  */
 
-/*
- * Description:
- */
+package BeardsCrypto.FileEncryptor;
 
 import javafx.application.Application;
 import javafx.geometry.Insets;
@@ -43,6 +41,11 @@ import java.security.AlgorithmParameters;
 import java.security.spec.KeySpec;
 import java.util.ArrayList;
 import java.util.Arrays;
+
+/*
+ * Description: This is a simple graphical file encryption tool
+ */
+
 
 public class FileEncryptor extends Application {
 
@@ -184,7 +187,7 @@ public class FileEncryptor extends Application {
 
 
 
-            if (!isReady())
+            if (!isReady(true))
                 return;
 
             try {
@@ -202,7 +205,7 @@ public class FileEncryptor extends Application {
 
         buttonDecrypt.setOnAction(e -> {
 
-            if (!isReady())
+            if (!isReady(false))
                 return;
 
             try {
@@ -271,7 +274,7 @@ public class FileEncryptor extends Application {
 
         Scene root = new Scene(borderPane, 400, 350);
 
-        primaryStage.setTitle("FileEncryptor");
+        primaryStage.setTitle("BeardsCrypto.FileEncryptor.FileEncryptor");
         primaryStage.setScene(root);
         primaryStage.show();
 
@@ -285,21 +288,31 @@ public class FileEncryptor extends Application {
 
     }
 
-    private boolean isReady() {
+    private boolean isReady(boolean isEncryptButton) {
 
         statuslbl.setVisible(false);
         statuslbl.setText("");
 
         if (! (passwordField.getText().length() > 0)) {
             statuslbl.setVisible(true);
-            statuslbl.setText("Please enter a password to encrypt the file!");
+            if (isEncryptButton)
+                statuslbl.setText("Please enter a password to encrypt the file!");
+
+            else
+                statuslbl.setText("Please enter a password to decrypt the file!");
+
             return false;
 
         }
 
         if (selectedFile == null) {
             statuslbl.setVisible(true);
-            statuslbl.setText("Please choose a file to encrypt!");
+            if (isEncryptButton)
+                statuslbl.setText("Please choose a file to encrypt!");
+
+            else
+                statuslbl.setText("Please choose a file to decrypt!");
+
             return false;
 
         }
@@ -313,7 +326,12 @@ public class FileEncryptor extends Application {
 
         if (algoComboBox.getValue() == null) {
             statuslbl.setVisible(true);
-            statuslbl.setText("Please choose an algorithm to encrypt with!");
+            if (isEncryptButton)
+                statuslbl.setText("Please choose an algorithm to encrypt with!");
+
+            else
+                statuslbl.setText("Please choose an algorithm to decrypt with!");
+
             return false;
 
         }
