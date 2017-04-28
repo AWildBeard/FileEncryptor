@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package BeardsCrypto.FileEncryptor;
+package fileEncryptor;
 
 import javafx.application.Application;
 import javafx.geometry.Insets;
@@ -274,7 +274,7 @@ public class FileEncryptor extends Application {
 
         Scene root = new Scene(borderPane, 400, 350);
 
-        primaryStage.setTitle("BeardsCrypto.FileEncryptor.FileEncryptor");
+        primaryStage.setTitle("FileEncryptor");
         primaryStage.setScene(root);
         primaryStage.show();
 
