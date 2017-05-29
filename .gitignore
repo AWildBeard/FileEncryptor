@@ -26,3 +26,11 @@ hs_err_pid*
 # Idea
 .idea/*
 *.iml
+*.ipr
+*.iws
+
+# Ignore Gradle and some transient project config files (template versions available under /templates)
+build/
+/gradle.properties
+/override.cfg
+.gradle/

@@ -14,8 +14,6 @@
  * limitations under the License.
  */
 
-package fileEncryptor;
-
 import javafx.application.Application;
 import javafx.concurrent.Task;
 import javafx.geometry.Insets;
@@ -36,6 +34,7 @@ import javax.crypto.Cipher;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 import cryptoUtils.CryptoUtils;
 
@@ -45,6 +44,9 @@ import cryptoUtils.CryptoUtils;
 
 
 public class FileEncryptor extends Application {
+
+    // Stage
+    private Stage primaryStage;
 
     // ArrayList to hold nodes
     private ArrayList<Node> nodeArrayList = new ArrayList<>();
@@ -59,7 +61,8 @@ public class FileEncryptor extends Application {
     private HBox buttonHbox = new HBox(),
                  algoRowHbox = new HBox(),
                  choseFileRowHbox = new HBox(),
-                 passwordFieldHbox = new HBox();
+                 passwordFieldHbox = new HBox(),
+                 modeHbox = new HBox();
 
     // Buttons
     private Button buttonEncrypt = new Button("Encrypt"),
@@ -68,7 +71,8 @@ public class FileEncryptor extends Application {
 
     // ComboBox
     private ComboBox algoComboBox = new ComboBox(),
-                     keyStrengthComboBox = new ComboBox();
+                     keyStrengthComboBox = new ComboBox(),
+                     modeComboBox = new ComboBox();
 
     // File Chooser
     private FileChooser fileChooser;
@@ -79,7 +83,8 @@ public class FileEncryptor extends Application {
     // Text labels and such
     private Font defaultFont = new Font(15);
     private Text statuslbl = new Text(),
-                 algoType = new Text("Algo:");
+                 algoType = new Text("Algo:"),
+                 modeType = new Text("Mode:");
 
     // File object
     private File inputFile = null;
@@ -90,12 +95,14 @@ public class FileEncryptor extends Application {
 
     private Integer keyStrength;
 
-    // Algos
+    // String items
     private String aes1 = "AES/CBC/PKCS5Padding",
                    desede1 = "DESede/CBC/PKCS5Padding",
                    algoSpec,
                    algorithm,
-                   password;
+                   password,
+                   mode1 = "Simple Mode",
+                   mode2 = "Advanced Mode";
 
     // 0-arg constructor
     public FileEncryptor() {
@@ -109,9 +116,9 @@ public class FileEncryptor extends Application {
         // Add main scene components to the array list to make building the scene easier later
         nodeArrayList.addAll(Arrays.asList(
                 // Texts
-                statuslbl, algoType,
+                statuslbl, algoType, modeType,
                 // HBoxes
-                algoRowHbox, choseFileRowHbox,
+                modeHbox, algoRowHbox, choseFileRowHbox,
                 passwordFieldHbox, buttonHbox
         ));
 
@@ -127,6 +134,8 @@ public class FileEncryptor extends Application {
 
         keyStrengthComboBox.getItems().addAll(128, 192, 256);
 
+        modeComboBox.getItems().addAll(mode1, mode2);
+
         // Set the prompt on the password field
         passwordField.setPromptText("Password");
 
@@ -136,19 +145,24 @@ public class FileEncryptor extends Application {
         // Set prompt text for dropdowns
         algoComboBox.setPromptText("Algo to Use");
         keyStrengthComboBox.setPromptText("Key Size");
+        modeComboBox.setValue(mode1);
 
     }
 
 
     public void start(Stage primaryStage) {
 
+        this.primaryStage = primaryStage;
+
         // Add nodes to parents for organization and screen arangement
+        modeHbox.getChildren().addAll(modeType, modeComboBox);
         buttonHbox.getChildren().addAll(buttonDecrypt, buttonEncrypt);
         algoRowHbox.getChildren().addAll(algoType, algoComboBox);
         choseFileRowHbox.getChildren().addAll(choseFileButton, fileField);
-        passwordFieldHbox.getChildren().addAll(passwordField, keyStrengthComboBox);
+        passwordFieldHbox.getChildren().addAll(passwordField);
 
         // Set spacing between the nodes on the hboxes
+        modeHbox.setSpacing(5.0);
         buttonHbox.setSpacing(5.0);
         algoRowHbox.setSpacing(10.0);
         choseFileRowHbox.setSpacing(5.0);
@@ -163,15 +177,19 @@ public class FileEncryptor extends Application {
 
         algoComboBox.setOnAction(e -> doAlgoCombBox());
 
+        modeComboBox.setOnAction(e -> doModeCombBox());
+
         // Build the scene
-        int count = 0;
+
         for (Node node : nodeArrayList) {
             if (node instanceof HBox) {
                 ((HBox) node).setAlignment(Pos.CENTER);
-                gridPane.add(node, 0, count++, 3, 1);
-
             }
         }
+        gridPane.add(modeHbox,0,0,3,1);
+        gridPane.add(choseFileRowHbox,0,1,3,1);
+        gridPane.add(passwordFieldHbox,0,2,3,1);
+        gridPane.add(buttonHbox,0,3,3,1);
 
         // Set the gaps around parents in the gridpane
         gridPane.setHgap(5.0);
@@ -192,9 +210,9 @@ public class FileEncryptor extends Application {
         Scene root = new Scene(borderPane, 400, 350);
 
         // Add the scene to the stage and name the stage
-        primaryStage.setTitle("FileEncryptor");
-        primaryStage.setScene(root);
-        primaryStage.show(); // Show the stage
+        this.primaryStage.setTitle("FileEncryptor");
+        this.primaryStage.setScene(root);
+        this.primaryStage.show(); // Show the stage
 
         // Set the width of the progress bar to the width of the gridpane
         // can only be done once the gridpane is shown on the scene
@@ -360,6 +378,62 @@ public class FileEncryptor extends Application {
             keyStrengthComboBox.getItems().removeAll(128, 192, 256);
             keyStrengthComboBox.getItems().addAll(192);
 
+        }
+    }
+
+    private void doModeCombBox() {
+
+        if (((String)modeComboBox.getValue()).contains("Simple")) {
+
+            this.primaryStage.hide();
+            List nodeList = this.passwordFieldHbox.getChildren();
+            for (int count = 0 ; count < nodeList.size() ; count++) {
+                this.passwordFieldHbox.getChildren().remove(count);
+            }
+
+            nodeList = this.gridPane.getChildren();
+            for (int count= 0 ; count < nodeList.size() ; count++) {
+                this.gridPane.getChildren().remove(count);
+            }
+
+            // Build the password field hbox
+            this.passwordFieldHbox.getChildren().add(this.passwordField);
+
+            // Build the scene
+            this.gridPane.add(modeHbox,0,0,3,1);
+            this.gridPane.add(choseFileRowHbox,0,1,3,1);
+            this.gridPane.add(passwordFieldHbox, 0, 2, 3, 1);
+            this.gridPane.add(buttonHbox,0,3,3,1);
+            this.primaryStage.show();
+
+        }
+
+        if (((String)this.modeComboBox.getValue()).contains("Advanced")) {
+            this.primaryStage.hide();
+            List nodeList = this.passwordFieldHbox.getChildren();
+            for (int count = 0 ; count < nodeList.size() ; count++) {
+                this.passwordFieldHbox.getChildren().remove(count);
+            }
+
+            nodeList = null;
+            nodeList = gridPane.getChildren();
+            for (int count = 0 ; count < nodeList.size() ; count++) {
+                this.gridPane.getChildren().remove(count);
+            }
+
+            System.out.println(((List)gridPane.getChildren()).size());
+            System.out.println(nodeList.size());
+            // Build the password filed combo box
+            this.passwordFieldHbox.getChildren().addAll(passwordField,keyStrengthComboBox);
+
+            //Build the scene
+            this.gridPane.add(modeHbox, 0, 0, 3, 1);
+            this.gridPane.add(algoRowHbox, 0, 1, 3, 1);
+            this.gridPane.add(choseFileRowHbox, 0, 2, 3, 1);
+            this.gridPane.add(passwordFieldHbox, 0, 3, 3, 1);
+            this.gridPane.add(buttonHbox, 0, 4, 3, 1);
+
+            this.primaryStage.show();
         }
     }
 
