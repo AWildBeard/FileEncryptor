@@ -15,6 +15,7 @@
  */
 
 import javafx.application.Application;
+import javafx.application.Platform;
 import javafx.concurrent.Task;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -32,9 +33,7 @@ import javafx.stage.StageStyle;
 
 import javax.crypto.Cipher;
 import java.io.*;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 
 import cryptoUtils.CryptoUtils;
 
@@ -104,6 +103,8 @@ public class FileEncryptor extends Application {
                    mode1 = "Simple Mode",
                    mode2 = "Advanced Mode";
 
+    private boolean isSimpleMode = true;
+
     // 0-arg constructor
     public FileEncryptor() {
 
@@ -127,6 +128,9 @@ public class FileEncryptor extends Application {
             if (node instanceof Text) {
                 ((Text) node).setFont(defaultFont);
             }
+            if (node instanceof HBox) {
+                ((HBox) node).setAlignment(Pos.CENTER);
+            }
         }
 
         // Add content to the dropdowns
@@ -143,7 +147,7 @@ public class FileEncryptor extends Application {
         fileField.setEditable(false);
 
         // Set prompt text for dropdowns
-        algoComboBox.setPromptText("Algo to Use");
+        algoComboBox.setPromptText("Choose Algo");
         keyStrengthComboBox.setPromptText("Key Size");
         modeComboBox.setValue(mode1);
 
@@ -180,16 +184,10 @@ public class FileEncryptor extends Application {
         modeComboBox.setOnAction(e -> doModeCombBox());
 
         // Build the scene
-
-        for (Node node : nodeArrayList) {
-            if (node instanceof HBox) {
-                ((HBox) node).setAlignment(Pos.CENTER);
-            }
-        }
-        gridPane.add(modeHbox,0,0,3,1);
-        gridPane.add(choseFileRowHbox,0,1,3,1);
-        gridPane.add(passwordFieldHbox,0,2,3,1);
-        gridPane.add(buttonHbox,0,3,3,1);
+        this.gridPane.add(modeHbox,0,0,3,1);
+        this.gridPane.add(choseFileRowHbox,0,1,3,1);
+        this.gridPane.add(passwordFieldHbox, 0, 2, 3, 1);
+        this.gridPane.add(buttonHbox,0,3,3,1);
 
         // Set the gaps around parents in the gridpane
         gridPane.setHgap(5.0);
@@ -217,6 +215,9 @@ public class FileEncryptor extends Application {
         // Set the width of the progress bar to the width of the gridpane
         // can only be done once the gridpane is shown on the scene
         progressBar.setPrefWidth(gridPane.getWidth());
+
+        // Grab the focus for the PaswordField
+        this.passwordField.requestFocus();
 
     }
 
@@ -265,24 +266,28 @@ public class FileEncryptor extends Application {
             }
 
         // If no algorithm in the algo drop down has been chosen
-        if (algoComboBox.getValue() == null) {
-            statuslbl.setVisible(true);
-            if (isEncryptButton)
-                statuslbl.setText("Please choose an algorithm to encrypt with!");
+        if (!this.isSimpleMode) {
+            if (algoComboBox.getValue() == null) {
+                statuslbl.setVisible(true);
+                if (isEncryptButton)
+                    statuslbl.setText("Please choose an algorithm to encrypt with!");
 
-            else
-                statuslbl.setText("Please choose an algorithm to decrypt with!");
+                else
+                    statuslbl.setText("Please choose an algorithm to decrypt with!");
 
-            return false;
+                return false;
 
+            }
         }
 
         // If no key size has been chosen in the key size drop down
-        if (keyStrengthComboBox.getValue() == null) {
-            statuslbl.setVisible(true);
-            statuslbl.setText("Please chose a key size!");
-            return false;
+        if (!this.isSimpleMode) {
+            if (keyStrengthComboBox.getValue() == null) {
+                statuslbl.setVisible(true);
+                statuslbl.setText("Please chose a key size!");
+                return false;
 
+            }
         }
 
         // If no password has been entered
@@ -309,7 +314,12 @@ public class FileEncryptor extends Application {
 
         this.password = passwordField.getText();
 
-        this.algorithm = (String)algoComboBox.getValue();
+        if (!this.isSimpleMode) {
+            this.algorithm = (String) algoComboBox.getValue();
+        }
+        else {
+            this.algorithm = aes1;
+        }
 
         // Determine the Algo spec based on the algorithm chosen by the user
         if (this.algorithm.contains("AES"))
@@ -318,7 +328,12 @@ public class FileEncryptor extends Application {
         else
             this.algoSpec = "DESede";
 
-        this.keyStrength = (int)keyStrengthComboBox.getValue();
+        if (!this.isSimpleMode) {
+            this.keyStrength = (int) keyStrengthComboBox.getValue();
+        }
+        else {
+            this.keyStrength = 128;
+        }
 
         return true;
 
@@ -381,50 +396,29 @@ public class FileEncryptor extends Application {
         }
     }
 
-    private void doModeCombBox() {
+    private void buildScene(Boolean simpleMode) {
 
-        if (((String)modeComboBox.getValue()).contains("Simple")) {
-
-            this.primaryStage.hide();
-            List nodeList = this.passwordFieldHbox.getChildren();
-            for (int count = 0 ; count < nodeList.size() ; count++) {
-                this.passwordFieldHbox.getChildren().remove(count);
+        if (simpleMode) {
+            for (Node node : nodeArrayList) {
+                if (node instanceof HBox)
+                    this.gridPane.getChildren().remove(node);
             }
-
-            nodeList = this.gridPane.getChildren();
-            for (int count= 0 ; count < nodeList.size() ; count++) {
-                this.gridPane.getChildren().remove(count);
-            }
-
-            // Build the password field hbox
-            this.passwordFieldHbox.getChildren().add(this.passwordField);
+            this.passwordFieldHbox.getChildren().remove(keyStrengthComboBox);
 
             // Build the scene
             this.gridPane.add(modeHbox,0,0,3,1);
             this.gridPane.add(choseFileRowHbox,0,1,3,1);
             this.gridPane.add(passwordFieldHbox, 0, 2, 3, 1);
             this.gridPane.add(buttonHbox,0,3,3,1);
-            this.primaryStage.show();
 
         }
-
-        if (((String)this.modeComboBox.getValue()).contains("Advanced")) {
-            this.primaryStage.hide();
-            List nodeList = this.passwordFieldHbox.getChildren();
-            for (int count = 0 ; count < nodeList.size() ; count++) {
-                this.passwordFieldHbox.getChildren().remove(count);
+        else {
+            for (Node node : nodeArrayList) {
+                if (node instanceof HBox) {
+                    this.gridPane.getChildren().remove(node);
+                }
             }
-
-            nodeList = null;
-            nodeList = gridPane.getChildren();
-            for (int count = 0 ; count < nodeList.size() ; count++) {
-                this.gridPane.getChildren().remove(count);
-            }
-
-            System.out.println(((List)gridPane.getChildren()).size());
-            System.out.println(nodeList.size());
-            // Build the password filed combo box
-            this.passwordFieldHbox.getChildren().addAll(passwordField,keyStrengthComboBox);
+            this.passwordFieldHbox.getChildren().add(keyStrengthComboBox);
 
             //Build the scene
             this.gridPane.add(modeHbox, 0, 0, 3, 1);
@@ -433,8 +427,38 @@ public class FileEncryptor extends Application {
             this.gridPane.add(passwordFieldHbox, 0, 3, 3, 1);
             this.gridPane.add(buttonHbox, 0, 4, 3, 1);
 
-            this.primaryStage.show();
         }
+
+        if (modeComboBox.isFocused()) {
+            passwordField.requestFocus();
+        }
+
+    }
+
+    private void doModeCombBox() {
+
+        if (((String)modeComboBox.getValue()).contains("Simple")) {
+            buildScene(true);
+        }
+
+        if (((String)this.modeComboBox.getValue()).contains("Advanced")) {
+            buildScene(false);
+        }
+    }
+
+    private void resetProgress() {
+
+        Timer timerTask = new Timer();
+        timerTask.schedule(new TimerTask() {
+            @Override
+            public void run() {
+                progressBar.setProgress(0.0);
+                fileField.setText(" ");
+                inputFile = null;
+                timerTask.cancel(); // Task might hang without this
+            }
+        }, 500);
+
     }
 
     // Encrypt method button implementation for the encrypt button.
@@ -485,6 +509,8 @@ public class FileEncryptor extends Application {
         encrypTask.setOnSucceeded(t -> {
             statuslbl.setVisible(true);
             statuslbl.setText("File Encrypted!");
+            progressBar.progressProperty().unbind();
+            resetProgress();
 
         });
 
@@ -492,6 +518,8 @@ public class FileEncryptor extends Application {
         encrypTask.setOnFailed(y -> {
             statuslbl.setVisible(true);
             statuslbl.setText("Failed to encrypt file!");
+            progressBar.progressProperty().unbind();
+            resetProgress();
 
         });
 
@@ -542,6 +570,8 @@ public class FileEncryptor extends Application {
         decrypTask.setOnSucceeded(t -> {
             statuslbl.setVisible(true);
             statuslbl.setText("File decrypted!");
+            progressBar.progressProperty().unbind();
+            resetProgress();
 
         });
 
@@ -549,6 +579,8 @@ public class FileEncryptor extends Application {
         decrypTask.setOnFailed(y -> {
             statuslbl.setVisible(true);
             statuslbl.setText("Failed to decrypt file!");
+            progressBar.progressProperty().unbind();
+            resetProgress();
 
         });
 
