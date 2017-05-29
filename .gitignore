@@ -34,3 +34,6 @@ build/
 /gradle.properties
 /override.cfg
 .gradle/
+
+# DO NOT IGNORE GRADLE jar
+!gradle-wrapper.jar
