@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Copyright 2017 Michael Mitchell <mmitc@protonmail.com> -->
+<component type="desktop">
+  <id>com.github.awildbeard.fileencryptor.desktop</id>
+  <metadata_license>CC0</metadata_license>
+  <name>File Encryptor</name>
+  <summary>Simple File Encryptor</summary>
+  <description>
+		  <p>File Encryptor is a simple file encryption tool designed for the masses and enthusiasts alike.
+		     It is designed to be easy to use, fast, and secure while still maintaining
+		     impresive capabilities.
+	      </p>
+  </description>
+</component>

@@ -1,3 +1,54 @@
 #!/usr/bin/make -f
 
+appDataSource = $(CURDIR)/data/com.github.awildbeard.fileencryptor.appdata.xml
+desktopSource = $(CURDIR)/data/com.github.awildbeard.fileencryptor.desktop
+bashExecSource = $(CURDIR)/data/fileEncryptor
+128IconSource = $(CURDIR)/data/icons/128/file-encryptor.png
+64IconSource = $(CURDIR)/data/icons/64/file-encryptor.png
+48IconSource = $(CURDIR)/data/icons/48/file-encryptor.png
+32IconSource = $(CURDIR)/data/icons/32/file-encryptor.png
+builtFileSource = $(CURDIR)/build/libs/fileEncryptor.jar
+
+appDataDest = $(CURDIR)/debian/file-encryptor/usr/share/metainfo
+desktopDest = $(CURDIR)/debian/file-encryptor/usr/share/applications
+bashExecDest = $(CURDIR)/debian/file-encryptor/usr/bin
+128IconDest = $(CURDIR)/debian/file-encryptor/usr/share/icons/hicolor/128x128/apps
+64IconDest = $(CURDIR)/debian/file-encryptor/usr/share/icons/hicolor/64x64/apps
+48IconDest = $(CURDIR)/debian/file-encryptor/usr/share/icons/hicolor/48x48/apps
+32IconDest = $(CURDIR)/debian/file-encryptor/usr/share/icons/hicolor/32x32/apps
+builtFileDest = $(CURDIR)/debian/file-encryptor/usr/share/file-encryptor
+
+buildSysExec = gradle
+
+build: build-stamp
+	$(buildSysExec) build assemble
+
+
+build-stamp:
+	dh_testdir
+	touch build-stamp
+
+clean:
+	dh_testdir
+	dh_testroot
+	rm -f build-stamp
+	dh_clean
+
+install: build clean $(appDataSource) $(desktopSource) $(builtFileSource) $(bashExecSource)
+	dh_testdir
+	dh_testroot
+	dh_prep
+	dh_installdirs
+	mkdir -m 755 -p $(appdataDest)
+	mkdir -m 755 -p $(desktopDest)
+	mkdir -m 755 -p $(buildFileDest)
+	mkdir -m 755 -p $(bashExecDest)
+	install -m 666 $(appdataSource) $(appDataDest)
+	install -m 666 $(desktopSource) $(desktopDest)
+	install -m 777 $(bashExecSource) $(bashExecDest)
+	install -m 666 $(128IconSource) $(128IconDest)
+	install -m 666 $(64IconSource) $(64IconDest)
+	install -m 666 $(48IconSource) $(48IconDest)
+	install -m 666 $(32IconSource) $(32IconDest)
+	install -m 666 $(builtFileSource) $(builtFileDest)
 

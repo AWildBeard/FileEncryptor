@@ -1,0 +1,6 @@
+#!/bin/bash
+
+java -jar /usr/share/file-encryptor/fileEncryptor.jar
+
+exit
+
