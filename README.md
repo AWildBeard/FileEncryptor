@@ -33,6 +33,14 @@ Once you have a JRE installed simple double click the
 should launch just fine.
 
 ##### For Linux Users
+
+Debian based Linux distros:
+If you are on debian, there is a packaged deb for you
+on the releases page.
+
+Other Linux distros:
+You will need to download the .jar file from the
+releases page and use that to launch the program.
 If your system will not graphically launch the .jar
 file, use: 
 
@@ -41,7 +49,7 @@ file, use:
 to run the .jar file.
 
 You too will need a JRE to run this program however.
-For Debian based distros, there should be a 
+For most distros, there should be a 
 openjdk-8-jre package in your distros repos that 
 you will need to install in addition to the 
 openjfx package. For example:
