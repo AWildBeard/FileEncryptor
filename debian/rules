@@ -1,11 +1,12 @@
 #!/usr/bin/make -f
 
+baseDir = $(CURDIR)
 javaSourceDir = $(CURDIR)/src/main/java
 javaSource = FileEncryptor.java
 buildJavaSource1 = FileEncryptor.class
-buildJavaSource2 = FileEncryptor\$1.class
-buildJavaSource3 = FileEncryptor\$2.class
-buildJavaSource4 = FileEncryptor\$3.class
+buildJavaSource2 = FileEncryptor\$$1.class
+buildJavaSource3 = FileEncryptor\$$2.class
+buildJavaSource4 = FileEncryptor\$$3.class
 buildJavaSource5 = cryptoUtils/CryptoUtils.class
 appDataSource = $(CURDIR)/data/com.github.awildbeard.fileencryptor.appdata.xml
 desktopSource = $(CURDIR)/data/com.github.awildbeard.fileencryptor.desktop
@@ -15,8 +16,7 @@ bashExecSource = $(CURDIR)/data/fileEncryptor
 48IconSource = $(CURDIR)/data/icons/48/file-encryptor.png
 32IconSource = $(CURDIR)/data/icons/32/file-encryptor.png
 buildFileSourceName = fileEncryptor.jar
-builtFileSource = $(CURDIR)$(buildFileSourceName)
-
+builtFileSource = $(CURDIR)/$(buildFileSourceName)
 appDataDest = $(CURDIR)/debian/file-encryptor/usr/share/metainfo
 desktopDest = $(CURDIR)/debian/file-encryptor/usr/share/applications
 bashExecDest = $(CURDIR)/debian/file-encryptor/usr/bin
@@ -35,6 +35,19 @@ build: build-stamp
 	cd $(javaSourceDir) ; mv $(buildFileSourceName) $(builtFileSource)
 
 binary-indep: build install
+	dh_testdir
+	dh_testroot
+	dh_installchangelogs
+	dh_installdocs
+	dh_installexamples
+	dh_installman
+	dh_link
+	dh_compress
+	dh_fixperms
+	dh_installdeb
+	dh_gencontrol
+	dh_md5sums
+	dh_builddeb
 
 binary-arch: build install
 
@@ -47,22 +60,27 @@ build-stamp:
 clean:
 	dh_testdir
 	dh_testroot
-	cd $(javaSourceDir) ; rm -r $(buildJavaSource1) $(buildJavaSource2) $(buildJavaSource3) $(buildJavaSource4)
-	cd $(javaSourceDir)/cryptoUtils ; rm -r $(buildJavaSource5)
-	rm -r $(builtFileSource)
+	cd $(javaSourceDir) ; rm -f $(buildJavaSource1) $(buildJavaSource2) $(buildJavaSource3) $(buildJavaSource4)
+	cd $(javaSourceDir)/cryptoUtils ; rm -f $(buildJavaSource5)
+	rm -f $(builtFileSource)
 	rm -f build-stamp
 	dh_clean
 
 install: build $(appDataSource) $(desktopSource) $(builtFileSource) $(bashExecSource)
+	cd $(baseDir)
 	dh_testdir
 	dh_testroot
 	dh_prep
 	dh_installdirs
-	mkdir -m 755 -p $(appdataDest)
-	mkdir -m 755 -p $(desktopDest)
-	mkdir -m 755 -p $(buildFileDest)
-	mkdir -m 755 -p $(bashExecDest)
-	install -m 666 $(appdataSource) $(appDataDest)
+	mkdir -m 666 -p $(appDataDest)
+	mkdir -m 666 -p $(desktopDest)
+	mkdir -m 664 -p $(bashExecDest)
+	mkdir -m 666 -p $(128IconDest)
+	mkdir -m 666 -p $(64IconDest)
+	mkdir -m 666 -p $(48IconDest)
+	mkdir -m 666 -p $(32IconDest)
+	mkdir -m 664 -p $(builtFileDest)
+	install -m 666 $(appDataSource) $(appDataDest)
 	install -m 666 $(desktopSource) $(desktopDest)
 	install -m 777 $(bashExecSource) $(bashExecDest)
 	install -m 666 $(128IconSource) $(128IconDest)
