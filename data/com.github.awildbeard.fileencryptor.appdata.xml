@@ -11,4 +11,9 @@
 		     impresive capabilities.
 	      </p>
   </description>
+  <custom>
+		  <value key="x-appceneter-color-primary">#ffffff</value>
+		  <value key="x-appcenter-color-primary-text">#000000</value>
+		  <value key="x-appcenter-suggested-price">1</value>
+  </custom>
 </component>
