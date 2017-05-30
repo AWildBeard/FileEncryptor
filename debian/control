@@ -1,0 +1,17 @@
+Source: file-encryptor
+Section: x11
+Priority: optional
+Maintainer: dev <dev@unknown>
+Build-Depends: debhelper (>=9), openjdk-8-jdk, openjfx
+Standards-Version: 3.9.6
+Homepage: https://github.com/AWildBeard/FileEncryptor
+#Vcs-Git: git://anonscm.debian.org/collab-maint/file-encryptor.git
+#Vcs-Browser: https://anonscm.debian.org/cgit/collab-maint/file-encryptor.git
+
+Package: file-encryptor
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: Simple user-friendly file encryption tool
+ This is a simple file encryption tool that aims
+ to be easy to use and bring powerful file
+ encryption to the masses.
