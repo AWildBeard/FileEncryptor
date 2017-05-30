@@ -1,5 +1,12 @@
 #!/usr/bin/make -f
 
+javaSourceDir = $(CURDIR)/src/main/java
+javaSource = FileEncryptor.java
+buildJavaSource1 = FileEncryptor.class
+buildJavaSource2 = FileEncryptor\$1.class
+buildJavaSource3 = FileEncryptor\$2.class
+buildJavaSource4 = FileEncryptor\$3.class
+buildJavaSource5 = cryptoUtils/CryptoUtils.class
 appDataSource = $(CURDIR)/data/com.github.awildbeard.fileencryptor.appdata.xml
 desktopSource = $(CURDIR)/data/com.github.awildbeard.fileencryptor.desktop
 bashExecSource = $(CURDIR)/data/fileEncryptor
@@ -7,7 +14,8 @@ bashExecSource = $(CURDIR)/data/fileEncryptor
 64IconSource = $(CURDIR)/data/icons/64/file-encryptor.png
 48IconSource = $(CURDIR)/data/icons/48/file-encryptor.png
 32IconSource = $(CURDIR)/data/icons/32/file-encryptor.png
-builtFileSource = $(CURDIR)/build/libs/fileEncryptor.jar
+buildFileSourceName = fileEncryptor.jar
+builtFileSource = $(CURDIR)$(buildFileSourceName)
 
 appDataDest = $(CURDIR)/debian/file-encryptor/usr/share/metainfo
 desktopDest = $(CURDIR)/debian/file-encryptor/usr/share/applications
@@ -18,11 +26,19 @@ bashExecDest = $(CURDIR)/debian/file-encryptor/usr/bin
 32IconDest = $(CURDIR)/debian/file-encryptor/usr/share/icons/hicolor/32x32/apps
 builtFileDest = $(CURDIR)/debian/file-encryptor/usr/share/file-encryptor
 
-buildSysExec = gradle
+buildSysExec = javac
+packageSysExec = jar cvfe 
 
 build: build-stamp
-	$(buildSysExec) build assemble
+	cd $(javaSourceDir) ; $(buildSysExec) $(javaSource)
+	cd $(javaSourceDir) ; $(packageSysExec) $(buildFileSourceName) FileEncryptor $(buildJavaSource1) $(buildJavaSource2) $(buildJavaSource3) $(buildJavaSource4) $(buildJavaSource5)
+	cd $(javaSourceDir) ; mv $(buildFileSourceName) $(builtFileSource)
 
+binary-indep: build install
+
+binary-arch: build install
+
+binary: binary-indep binary-arch
 
 build-stamp:
 	dh_testdir
@@ -31,10 +47,13 @@ build-stamp:
 clean:
 	dh_testdir
 	dh_testroot
+	cd $(javaSourceDir) ; rm -r $(buildJavaSource1) $(buildJavaSource2) $(buildJavaSource3) $(buildJavaSource4)
+	cd $(javaSourceDir)/cryptoUtils ; rm -r $(buildJavaSource5)
+	rm -r $(builtFileSource)
 	rm -f build-stamp
 	dh_clean
 
-install: build clean $(appDataSource) $(desktopSource) $(builtFileSource) $(bashExecSource)
+install: build $(appDataSource) $(desktopSource) $(builtFileSource) $(bashExecSource)
 	dh_testdir
 	dh_testroot
 	dh_prep
