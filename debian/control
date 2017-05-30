@@ -1,7 +1,7 @@
 Source: file-encryptor
 Section: x11
 Priority: optional
-Maintainer: dev <dev@unknown>
+Maintainer: Michael Mitchell <mmitc@protonmail.com>
 Build-Depends: debhelper (>=9), openjdk-8-jdk, openjfx
 Standards-Version: 3.9.6
 Homepage: https://github.com/AWildBeard/FileEncryptor
