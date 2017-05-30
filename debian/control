@@ -10,7 +10,7 @@ Homepage: https://github.com/AWildBeard/FileEncryptor
 
 Package: file-encryptor
 Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}
+Depends: openjdk-8-jre, openjfx
 Description: Simple user-friendly file encryption tool
  This is a simple file encryption tool that aims
  to be easy to use and bring powerful file
