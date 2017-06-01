@@ -34,6 +34,7 @@ import javafx.stage.StageStyle;
 import javax.crypto.Cipher;
 import java.io.*;
 import java.util.*;
+import java.util.concurrent.*;
 
 import cryptoUtils.CryptoUtils;
 
@@ -46,6 +47,9 @@ public class FileEncryptor extends Application {
 
     // Stage
     private Stage primaryStage;
+
+    // Thread executor
+    ScheduledExecutorService executor = Executors.newScheduledThreadPool(4);
 
     // ArrayList to hold nodes
     private ArrayList<Node> nodeArrayList = new ArrayList<>();
@@ -103,6 +107,11 @@ public class FileEncryptor extends Application {
                    mode1 = "Simple Mode",
                    mode2 = "Advanced Mode";
 
+    // Threads
+    private ScheduledFuture resetLblThread = null;
+    // Dont need a resetFieldsThread because that ends to fast to be needed.
+
+
     private boolean isSimpleMode = true;
 
     // 0-arg constructor
@@ -153,6 +162,12 @@ public class FileEncryptor extends Application {
 
     }
 
+    // Shutdown the thread executor when the application is closed
+    public void stop() {
+
+        executor.shutdownNow();
+
+    }
 
     public void start(Stage primaryStage) {
 
@@ -184,10 +199,10 @@ public class FileEncryptor extends Application {
         modeComboBox.setOnAction(e -> doModeCombBox());
 
         // Build the scene
-        this.gridPane.add(modeHbox,0,0,3,1);
-        this.gridPane.add(choseFileRowHbox,0,1,3,1);
-        this.gridPane.add(passwordFieldHbox, 0, 2, 3, 1);
-        this.gridPane.add(buttonHbox,0,3,3,1);
+        gridPane.add(modeHbox,0,0,3,1);
+        gridPane.add(choseFileRowHbox,0,1,3,1);
+        gridPane.add(passwordFieldHbox, 0, 2, 3, 1);
+        gridPane.add(buttonHbox,0,3,3,1);
 
         // Set the gaps around parents in the gridpane
         gridPane.setHgap(5.0);
@@ -216,9 +231,6 @@ public class FileEncryptor extends Application {
         // can only be done once the gridpane is shown on the scene
         progressBar.setPrefWidth(gridPane.getWidth());
 
-        // Grab the focus for the PaswordField
-        this.passwordField.requestFocus();
-
     }
 
     // For IDE's of limited capability
@@ -230,6 +242,13 @@ public class FileEncryptor extends Application {
 
     // Test to see if all the fields have values before attempting any action or assigning memory.
     private boolean isReady(boolean isEncryptButton) {
+
+        // This animates the status label
+        if (!(resetLblThread == null)) { // if the thread holder is initialized
+            // Cancel the thread even if there is no thread running
+            resetLblThread.cancel(false);
+
+        }
 
         statuslbl.setVisible(false);
         statuslbl.setText("");
@@ -266,7 +285,7 @@ public class FileEncryptor extends Application {
             }
 
         // If no algorithm in the algo drop down has been chosen
-        if (!this.isSimpleMode) {
+        if (!isSimpleMode) {
             if (algoComboBox.getValue() == null) {
                 statuslbl.setVisible(true);
                 if (isEncryptButton)
@@ -281,7 +300,7 @@ public class FileEncryptor extends Application {
         }
 
         // If no key size has been chosen in the key size drop down
-        if (!this.isSimpleMode) {
+        if (!isSimpleMode) {
             if (keyStrengthComboBox.getValue() == null) {
                 statuslbl.setVisible(true);
                 statuslbl.setText("Please chose a key size!");
@@ -310,32 +329,30 @@ public class FileEncryptor extends Application {
     }
 
     // Setup the memory for the user entered values
-    private boolean setupVars() {
+    private void setupVars() {
 
-        this.password = passwordField.getText();
+        password = passwordField.getText();
 
-        if (!this.isSimpleMode) {
-            this.algorithm = (String) algoComboBox.getValue();
+        if (!isSimpleMode) {
+            algorithm = (String) algoComboBox.getValue();
         }
         else {
-            this.algorithm = aes1;
+            algorithm = aes1;
         }
 
         // Determine the Algo spec based on the algorithm chosen by the user
-        if (this.algorithm.contains("AES"))
-            this.algoSpec = "AES";
+        if (algorithm.contains("AES"))
+            algoSpec = "AES";
 
         else
-            this.algoSpec = "DESede";
+            algoSpec = "DESede";
 
-        if (!this.isSimpleMode) {
-            this.keyStrength = (int) keyStrengthComboBox.getValue();
+        if (!isSimpleMode) {
+            keyStrength = (int) keyStrengthComboBox.getValue();
         }
         else {
-            this.keyStrength = 128;
+            keyStrength = 128;
         }
-
-        return true;
 
     }
 
@@ -401,36 +418,39 @@ public class FileEncryptor extends Application {
         if (simpleMode) {
             for (Node node : nodeArrayList) {
                 if (node instanceof HBox)
-                    this.gridPane.getChildren().remove(node);
+                    gridPane.getChildren().remove(node);
             }
-            this.passwordFieldHbox.getChildren().remove(keyStrengthComboBox);
+            passwordFieldHbox.getChildren().remove(keyStrengthComboBox);
 
             // Build the scene
-            this.gridPane.add(modeHbox,0,0,3,1);
-            this.gridPane.add(choseFileRowHbox,0,1,3,1);
-            this.gridPane.add(passwordFieldHbox, 0, 2, 3, 1);
-            this.gridPane.add(buttonHbox,0,3,3,1);
+            gridPane.add(modeHbox,0,0,3,1);
+            gridPane.add(choseFileRowHbox,0,1,3,1);
+            gridPane.add(passwordFieldHbox, 0, 2, 3, 1);
+            gridPane.add(buttonHbox,0,3,3,1);
 
         }
         else {
             for (Node node : nodeArrayList) {
                 if (node instanceof HBox) {
-                    this.gridPane.getChildren().remove(node);
+                    gridPane.getChildren().remove(node);
                 }
             }
-            this.passwordFieldHbox.getChildren().add(keyStrengthComboBox);
+            passwordFieldHbox.getChildren().add(keyStrengthComboBox);
 
             //Build the scene
-            this.gridPane.add(modeHbox, 0, 0, 3, 1);
-            this.gridPane.add(algoRowHbox, 0, 1, 3, 1);
-            this.gridPane.add(choseFileRowHbox, 0, 2, 3, 1);
-            this.gridPane.add(passwordFieldHbox, 0, 3, 3, 1);
-            this.gridPane.add(buttonHbox, 0, 4, 3, 1);
+            gridPane.add(modeHbox, 0, 0, 3, 1);
+            gridPane.add(algoRowHbox, 0, 1, 3, 1);
+            gridPane.add(choseFileRowHbox, 0, 2, 3, 1);
+            gridPane.add(passwordFieldHbox, 0, 3, 3, 1);
+            gridPane.add(buttonHbox, 0, 4, 3, 1);
 
         }
 
+        // The combo box like to freeze after switching rebuild for some reason.
+        // A focus removal and reapply fixes the issue
         if (modeComboBox.isFocused()) {
-            passwordField.requestFocus();
+            choseFileButton.requestFocus();
+            modeComboBox.requestFocus();
         }
 
     }
@@ -439,25 +459,26 @@ public class FileEncryptor extends Application {
 
         if (((String)modeComboBox.getValue()).contains("Simple")) {
             buildScene(true);
+            isSimpleMode = true;
         }
 
-        if (((String)this.modeComboBox.getValue()).contains("Advanced")) {
+        if (((String)modeComboBox.getValue()).contains("Advanced")) {
             buildScene(false);
+            isSimpleMode = false;
         }
     }
 
-    private void resetProgress() {
+    private void resetEncryptProgress() {
 
-        Timer timerTask = new Timer();
-        timerTask.schedule(new TimerTask() {
-            @Override
-            public void run() {
-                progressBar.setProgress(0.0);
-                fileField.setText(" ");
-                inputFile = null;
-                timerTask.cancel(); // Task might hang without this
-            }
-        }, 500);
+        executor.schedule(new ResetFields(progressBar, fileField, inputFile), 500, TimeUnit.MILLISECONDS);
+
+        resetLabel();
+
+    }
+
+    private void resetLabel() {
+
+        resetLblThread = executor.schedule(new ResetLabel(statuslbl), 5, TimeUnit.SECONDS);
 
     }
 
@@ -501,25 +522,24 @@ public class FileEncryptor extends Application {
 
                 updateProgress(3, 3);
 
+                Platform.runLater( () -> {
+                    statuslbl.setVisible(true);
+                    statuslbl.setText("File Encrypted!");
+                    progressBar.progressProperty().unbind();
+                    resetEncryptProgress();
+
+                });
+
                 return null;
             }
         };
-
-        // Set the status label to show that the operation succeded based on the task report
-        encrypTask.setOnSucceeded(t -> {
-            statuslbl.setVisible(true);
-            statuslbl.setText("File Encrypted!");
-            progressBar.progressProperty().unbind();
-            resetProgress();
-
-        });
 
         // Set the status label to show that the operation failed based on the task report
         encrypTask.setOnFailed(y -> {
             statuslbl.setVisible(true);
             statuslbl.setText("Failed to encrypt file!");
             progressBar.progressProperty().unbind();
-            resetProgress();
+            resetEncryptProgress();
 
         });
 
@@ -528,7 +548,7 @@ public class FileEncryptor extends Application {
         progressBar.progressProperty().bind(encrypTask.progressProperty());
 
         // Do all of the method in a thread to maintain useability of the main stage
-        new Thread(encrypTask).start();
+        executor.execute(encrypTask);
 
     }
 
@@ -562,25 +582,24 @@ public class FileEncryptor extends Application {
 
                 updateProgress(3, 3);
 
+                Platform.runLater(() -> {
+                    statuslbl.setVisible(true);
+                    statuslbl.setText("File decrypted!");
+                    progressBar.progressProperty().unbind();
+                    resetEncryptProgress();
+
+                });
+
                 return null;
             }
         };
-
-        // Set the status label to show that the operation succeded based on the task report
-        decrypTask.setOnSucceeded(t -> {
-            statuslbl.setVisible(true);
-            statuslbl.setText("File decrypted!");
-            progressBar.progressProperty().unbind();
-            resetProgress();
-
-        });
 
         // Set the status label to show that the operation failed based on the task report
         decrypTask.setOnFailed(y -> {
             statuslbl.setVisible(true);
             statuslbl.setText("Failed to decrypt file!");
             progressBar.progressProperty().unbind();
-            resetProgress();
+            resetEncryptProgress();
 
         });
 
@@ -589,7 +608,7 @@ public class FileEncryptor extends Application {
         progressBar.progressProperty().bind(decrypTask.progressProperty());
 
         // Do all of the method in a thread to maintain useability of the main stage
-        new Thread(decrypTask).start();
+        executor.execute(decrypTask);
 
     }
 
