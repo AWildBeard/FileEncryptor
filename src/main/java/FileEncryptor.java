@@ -28,6 +28,7 @@ import javafx.scene.shape.Circle;
 import javafx.scene.shape.Line;
 import javafx.scene.text.Font;
 import javafx.scene.text.Text;
+import javafx.scene.text.TextAlignment;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import javafx.scene.Scene;
@@ -219,7 +220,13 @@ public class FileEncryptor extends Application {
         StackPane minimizeButtonPane = new StackPane();
 
         Text windowTitle = new Text("File Encryptor");
+        windowTitle.setId("title-text");
         windowTitle.setStyle("-fx-fill: #c5c7c8");
+
+        PasswordField passwordField = new PasswordField();
+        passwordField.setId("password-field");
+        passwordField.setPromptText("Password");
+        passwordField.setStyle("-fx-focus-color: transparent; -fx-faint-focus-color: transparent; -fx-background-color: whitesmoke");
 
         Line addFileSymbol1 = new Line();
         Line addFileSymbol2 = new Line();
@@ -279,6 +286,12 @@ public class FileEncryptor extends Application {
         encryptButton.setRadius(25);
         encryptButton.setStyle("-fx-fill: whitesmoke");
 
+        ToggleButton modeButton = new ToggleButton();
+        modeButton.setText("Advanced");
+        modeButton.setId("mode-toggle");
+        modeButton.setStyle("-fx-base: #3f424d;" +
+                "-fx-text-fill: whitesmoke");
+
         Circle closeButton = new Circle();
         closeButton.setStyle("-fx-fill: red");
         closeButton.setRadius(8);
@@ -319,7 +332,9 @@ public class FileEncryptor extends Application {
             }
         });
         borderPane.setLeft(leftVbox);
-        leftVbox.getChildren().add(leftTopHBox);
+        leftVbox.getChildren().addAll(leftTopHBox, passwordField, modeButton);
+        VBox.setMargin(passwordField, new Insets(10, 20, 20, 20));
+        VBox.setMargin(modeButton, new Insets(0, 20, 20 ,20));
         // vBox.setStyle("-fx-background-color: whitesmoke"); // Dark theme
         leftVbox.setStyle("-fx-background-color: #3f424d");
         leftTopHBox.getChildren().addAll(decryptButtonPane, chooseFileButtonPane, encryptButtonPane);
