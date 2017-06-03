@@ -7,13 +7,11 @@ public class ResetFields implements Runnable{
 
     private ProgressBar progressBar;
     private TextField fileField;
-    private File file;
 
-    public ResetFields(ProgressBar progressBar, TextField fileField, File file) {
+    public ResetFields(ProgressBar progressBar, TextField fileField) {
 
         this.progressBar = progressBar;
         this.fileField = fileField;
-        this.file = file;
 
     }
 
@@ -21,7 +19,6 @@ public class ResetFields implements Runnable{
 
         progressBar.setProgress(0.0);
         fileField.setText("");
-        file = null;
 
     }
 

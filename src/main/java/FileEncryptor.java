@@ -16,14 +16,16 @@
 
 import javafx.application.Application;
 import javafx.application.Platform;
-import javafx.concurrent.Task;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.control.*;
-import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.GridPane;
-import javafx.scene.layout.HBox;
+import javafx.scene.input.MouseButton;
+import javafx.scene.layout.*;
+import javafx.scene.paint.Color;
+import javafx.scene.paint.Paint;
+import javafx.scene.shape.Circle;
+import javafx.scene.shape.Line;
 import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 import javafx.stage.FileChooser;
@@ -31,12 +33,9 @@ import javafx.stage.Stage;
 import javafx.scene.Scene;
 import javafx.stage.StageStyle;
 
-import javax.crypto.Cipher;
 import java.io.*;
 import java.util.*;
 import java.util.concurrent.*;
-
-import cryptoUtils.CryptoUtils;
 
 /*
  * Description: This is a simple graphical file encryption tool
@@ -57,8 +56,11 @@ public class FileEncryptor extends Application {
     // BorderPane
     private BorderPane borderPane = new BorderPane();
 
-    // GridPane
-    private GridPane gridPane = new GridPane();
+    // GridPanes
+    private GridPane centerGridPane = new GridPane();
+
+    // Tool Bar
+    private ToolBar toolBar = new ToolBar();
 
     // Hbox
     private HBox buttonHbox = new HBox(),
@@ -97,6 +99,7 @@ public class FileEncryptor extends Application {
     private TextField fileField = new TextField();
 
     private Integer keyStrength;
+    private Double mouseDragStartX, mouseDragStartY;
 
     // String items
     private String aes1 = "AES/CBC/PKCS5Padding",
@@ -174,11 +177,7 @@ public class FileEncryptor extends Application {
         this.primaryStage = primaryStage;
 
         // Add nodes to parents for organization and screen arangement
-        modeHbox.getChildren().addAll(modeType, modeComboBox);
         buttonHbox.getChildren().addAll(buttonDecrypt, buttonEncrypt);
-        algoRowHbox.getChildren().addAll(algoType, algoComboBox);
-        choseFileRowHbox.getChildren().addAll(choseFileButton, fileField);
-        passwordFieldHbox.getChildren().addAll(passwordField);
 
         // Set spacing between the nodes on the hboxes
         modeHbox.setSpacing(5.0);
@@ -189,47 +188,174 @@ public class FileEncryptor extends Application {
 
         // Give the buttons functionality
         choseFileButton.setOnAction(e -> choseFile());
-
         buttonEncrypt.setOnAction(e -> doEncrypt());
-
         buttonDecrypt.setOnAction(e -> doDecrypt());
-
         algoComboBox.setOnAction(e -> doAlgoCombBox());
-
         modeComboBox.setOnAction(e -> doModeCombBox());
 
-        // Build the scene
-        gridPane.add(modeHbox,0,0,3,1);
-        gridPane.add(choseFileRowHbox,0,1,3,1);
-        gridPane.add(passwordFieldHbox, 0, 2, 3, 1);
-        gridPane.add(buttonHbox,0,3,3,1);
+        // Build the center scene
+        centerGridPane.add(choseFileButton, 0, 2, 3, 1);
+        centerGridPane.add(fileField, 4, 2, 4, 1);
+        centerGridPane.add(passwordField, 1, 3, 3, 1);
+        centerGridPane.add(buttonHbox,0,4,3,1);
 
-        // Set the gaps around parents in the gridpane
-        gridPane.setHgap(5.0);
-        gridPane.setVgap(20.0);
+        // Set the gaps around parent nodes in the center gridpane
+        centerGridPane.setHgap(25);
+        centerGridPane.setVgap(25);
 
-        // Align the gridpane to the ceneter
-        gridPane.setAlignment(Pos.CENTER);
+        // Align the gridpanes to the center of the stage
+        centerGridPane.setAlignment(Pos.CENTER);
+        centerGridPane.setGridLinesVisible(true);
 
-        // Align and pad the borderpane
-        borderPane.setPadding(new Insets(20));
-        borderPane.setCenter(gridPane);
-        borderPane.setBottom(progressBar);
-        borderPane.setTop(statuslbl);
-        BorderPane.setAlignment(statuslbl, Pos.CENTER);
-        BorderPane.setAlignment(progressBar, Pos.CENTER);
+        VBox control = new VBox();
+        HBox titleBar = new HBox();
+        BorderPane borderPane = new BorderPane();
+        VBox leftVbox = new VBox();
+        HBox leftTopHBox = new HBox();
+        StackPane decryptButtonPane = new StackPane();
+        StackPane chooseFileButtonPane = new StackPane();
+        StackPane encryptButtonPane = new StackPane();
+        StackPane closeButtonPane = new StackPane();
+        StackPane minimizeButtonPane = new StackPane();
+
+        Text windowTitle = new Text("File Encryptor");
+        windowTitle.setStyle("-fx-fill: #c5c7c8");
+
+        Line addFileSymbol1 = new Line();
+        Line addFileSymbol2 = new Line();
+        Line closeSymbol1 = new Line();
+        Line closeSymbol2 = new Line();
+        Line minimizeSymbol = new Line();
+
+        addFileSymbol1.setStartX(40.0);
+        addFileSymbol1.setEndX(1.0);
+        addFileSymbol1.setStrokeWidth(9.0);
+        addFileSymbol1.setStroke(Paint.valueOf("#3f424d"));
+
+        addFileSymbol2.setStartY(40.0);
+        addFileSymbol2.setEndY(1.0);
+        addFileSymbol2.setStrokeWidth(9.0);
+        addFileSymbol2.setStroke(Paint.valueOf("#3f424d"));
+
+        closeSymbol1.setVisible(false);
+        closeSymbol1.setOnMouseEntered(e -> closeSymbol1.setVisible(true));
+        closeSymbol1.setOnMouseExited(e -> closeSymbol1.setVisible(false));
+        closeSymbol1.setOnMouseClicked(e -> Platform.exit());
+        closeSymbol1.setStartX(7.0);
+        closeSymbol1.setEndX(1.0);
+        closeSymbol1.setStartY(7.0);
+        closeSymbol1.setEndY(1.0);
+        closeSymbol1.setStrokeWidth(1.5);
+
+        closeSymbol2.setVisible(false);
+        closeSymbol2.visibleProperty().bind(closeSymbol1.visibleProperty());
+        closeSymbol2.onMouseEnteredProperty().bind(closeSymbol1.onMouseEnteredProperty());
+        closeSymbol2.onMouseExitedProperty().bind(closeSymbol1.onMouseExitedProperty());
+        closeSymbol2.setPickOnBounds(false);
+        closeSymbol2.setOnMouseClicked(e -> Platform.exit());
+        closeSymbol2.setStartX(7.0);
+        closeSymbol2.setEndX(1.0);
+        closeSymbol2.setStartY(-7.0);
+        closeSymbol2.setEndY(-1.0);
+        closeSymbol2.setStrokeWidth(1.5);
+
+        minimizeSymbol.setVisible(false);
+        minimizeSymbol.setOnMouseEntered(e -> minimizeSymbol.setVisible(true));
+        minimizeSymbol.setOnMouseExited(e -> minimizeSymbol.setVisible(false));
+        minimizeSymbol.setOnMouseClicked(e -> Platform.exit());
+        minimizeSymbol.setStartX(7.0);
+        minimizeSymbol.setEndX(1.0);
+        minimizeSymbol.setStrokeWidth(1.75);
+
+        Circle decryptButton = new Circle();
+        decryptButton.setRadius(25);
+        decryptButton.setStyle("-fx-fill: whitesmoke");
+
+        Circle chooseFileButton = new Circle();
+        chooseFileButton.setRadius(30);
+        chooseFileButton.setStyle("-fx-fill: whitesmoke");
+
+        Circle encryptButton = new Circle();
+        encryptButton.setRadius(25);
+        encryptButton.setStyle("-fx-fill: whitesmoke");
+
+        Circle closeButton = new Circle();
+        closeButton.setStyle("-fx-fill: red");
+        closeButton.setRadius(8);
+        closeButton.setOnMouseEntered(e -> closeSymbol1.setVisible(true));
+        closeButton.setOnMouseExited(e -> closeSymbol1.setVisible(false));
+        closeButton.setOnMouseClicked(e -> Platform.exit());
+
+        Circle minimizeButton = new Circle();
+        minimizeButton.setStyle("-fx-fill: goldenrod");
+        minimizeButton.setRadius(8);
+        minimizeButton.setOnMouseEntered(e -> minimizeSymbol.setVisible(true));
+        minimizeButton.setOnMouseExited(e -> minimizeSymbol.setVisible(false));
+        minimizeButton.setOnMouseClicked(e -> primaryStage.setIconified(true));
+
+        control.getChildren().addAll(titleBar, borderPane);
+        control.setStyle("-fx-background-color: whitesmoke");
+        // control.setStyle("-fx-background-color: #3f424d"); // Dark theme
+        titleBar.getChildren().addAll(windowTitle, minimizeButtonPane, closeButtonPane);
+        titleBar.setStyle("-fx-background-color: black");
+        titleBar.setAlignment(Pos.TOP_RIGHT);
+        titleBar.setSpacing(2);
+        titleBar.setMinHeight(22);
+        closeButtonPane.getChildren().addAll(closeButton, closeSymbol1, closeSymbol2);
+        minimizeButtonPane.getChildren().addAll(minimizeButton, minimizeSymbol);
+        HBox.setMargin(closeButtonPane, new Insets(4));
+        HBox.setMargin(minimizeButtonPane, new Insets(4));
+        HBox.setMargin(windowTitle, new Insets(4, 700/3, 4, 0));
+        titleBar.setOnMousePressed(e -> {
+            if (e.getButton() != MouseButton.MIDDLE) {
+                mouseDragStartX = e.getX();
+                mouseDragStartY = e.getY();
+            }
+        });
+        titleBar.setOnMouseDragged(e -> {
+            if (e.getButton() != MouseButton.MIDDLE) {
+                titleBar.getScene().getWindow().setX(e.getScreenX() - mouseDragStartX);
+                titleBar.getScene().getWindow().setY(e.getScreenY() - mouseDragStartY);
+            }
+        });
+        borderPane.setLeft(leftVbox);
+        leftVbox.getChildren().add(leftTopHBox);
+        // vBox.setStyle("-fx-background-color: whitesmoke"); // Dark theme
+        leftVbox.setStyle("-fx-background-color: #3f424d");
+        leftTopHBox.getChildren().addAll(decryptButtonPane, chooseFileButtonPane, encryptButtonPane);
+        leftTopHBox.setSpacing(10);
+        decryptButtonPane.getChildren().addAll(decryptButton);
+        chooseFileButtonPane.getChildren().addAll(chooseFileButton, addFileSymbol1, addFileSymbol2);
+        encryptButtonPane.getChildren().addAll(encryptButton);
+        HBox.setMargin(decryptButtonPane, new Insets(10, 0, 20, 20));
+        HBox.setMargin(encryptButtonPane, new Insets(10, 0, 20, 0));
+        HBox.setMargin(encryptButtonPane, new Insets(10, 20, 20, 0));
 
         // Add the main parent to the scene
-        Scene root = new Scene(borderPane, 400, 350);
+        Scene root = new Scene(control, 700, 450);
+
+        this.primaryStage.focusedProperty().addListener(e -> {
+            if (primaryStage.isFocused()) {
+                closeButton.setStyle("-fx-fill: red");
+                minimizeButton.setStyle("-fx-fill: goldenrod");
+                windowTitle.setStyle("-fx-fill: #c5c7c8");
+            }
+            else {
+                closeButton.setStyle("-fx-fill: dimgrey");
+                minimizeButton.setStyle("-fx-fill: dimgrey");
+                windowTitle.setStyle("-fx-fill: dimgrey");
+            }
+        });
 
         // Add the scene to the stage and name the stage
-        this.primaryStage.setTitle("FileEncryptor");
+        this.primaryStage.setTitle("File Encryptor");
         this.primaryStage.setScene(root);
+        this.primaryStage.initStyle(StageStyle.UNDECORATED);
         this.primaryStage.show(); // Show the stage
 
         // Set the width of the progress bar to the width of the gridpane
         // can only be done once the gridpane is shown on the scene
-        progressBar.setPrefWidth(gridPane.getWidth());
+        progressBar.setPrefWidth(centerGridPane.getWidth());
 
     }
 
@@ -240,13 +366,164 @@ public class FileEncryptor extends Application {
 
     }
 
+
+    // Implementation for the choose file button
+    private void choseFile() {
+
+        // File chooser object, this opens a graphical file chooser for the user
+        fileChooser = new FileChooser();
+        fileChooser.setTitle("Open File to Encrypt");
+
+        // make a second stage for the file chooser, so it can't take over the primary stage
+        Stage secondaryStage = new Stage(StageStyle.UTILITY);
+
+        // Try and get a file from the file chooser, fails if the user cancels choosing a file
+        try {
+            inputFile = fileChooser.showOpenDialog(secondaryStage);
+
+        } catch (Exception fileChooserException) {
+            fileChooserException.printStackTrace(System.out);
+
+        }
+
+        // Make sure the file is a file and not a folder
+        if (!inputFile.isFile()) {
+            updateStatus("Please only select a file", true);
+            inputFile = null;
+
+        }
+
+        // If the length of the file and its path are over the size of the file
+        // text field, shorted to the filename
+        else if (inputFile.getAbsoluteFile().length() > 20 ) {
+            fileField.setText(inputFile.getName());
+
+        }
+
+        else
+            fileField.setText(inputFile.getAbsolutePath());
+
+    }
+
+    // When the algorithm combo box selects a algo, refine the algo
+    // spec box to the available algo specs based on the algorithm
+    // chosen by the user
+    private void doAlgoCombBox() {
+
+        if (((String)algoComboBox.getValue()).contains("AES")) {
+            keyStrengthComboBox.getItems().removeAll(128, 192, 256);
+            keyStrengthComboBox.getItems().addAll(128, 256);
+
+        }
+
+        else {
+            keyStrengthComboBox.getItems().removeAll(128, 192, 256);
+            keyStrengthComboBox.getItems().addAll(192);
+
+        }
+    }
+
+    private void doModeCombBox() {
+
+        if (((String)modeComboBox.getValue()).contains("Simple")) {
+            buildScene(true);
+            isSimpleMode = true;
+        }
+
+        if (((String)modeComboBox.getValue()).contains("Advanced")) {
+            buildScene(false);
+            isSimpleMode = false;
+        }
+    }
+
+    private void resetAnimations() {
+
+        resetFields();
+        resetLabel();
+
+    }
+
+    private void resetFields() {
+
+        inputFile = null; // Reset the input file
+        executor.schedule(new ResetFields(progressBar, fileField), 750, TimeUnit.MILLISECONDS);
+
+    }
+
+    private void resetLabel() {
+
+        System.out.println("Queing status label reset");
+        resetLblThread = executor.schedule(new ResetLabel(statuslbl), 5, TimeUnit.SECONDS);
+
+    }
+
+    private void updateStatus(String message, boolean reset) {
+
+        statuslbl.setVisible(true);
+        statuslbl.setText(message);
+
+        if (reset)
+            resetLabel();
+
+    }
+
+    private void updateStatus(String message) {
+
+        statuslbl.setVisible(true);
+        statuslbl.setText(message);
+
+    }
+
+    private void buildScene(Boolean simpleMode) {
+
+        if (simpleMode) {
+            for (Node node : nodeArrayList) {
+                if (node instanceof HBox)
+                    centerGridPane.getChildren().remove(node);
+            }
+            passwordFieldHbox.getChildren().remove(keyStrengthComboBox);
+
+            // Build the scene
+            centerGridPane.add(modeHbox,0,0,3,1);
+            centerGridPane.add(choseFileRowHbox,0,1,3,1);
+            centerGridPane.add(passwordFieldHbox, 0, 2, 3, 1);
+            centerGridPane.add(buttonHbox,0,3,3,1);
+
+        }
+        else {
+            for (Node node : nodeArrayList) {
+                if (node instanceof HBox) {
+                    centerGridPane.getChildren().remove(node);
+                }
+            }
+            passwordFieldHbox.getChildren().add(keyStrengthComboBox);
+
+            //Build the scene
+            centerGridPane.add(modeHbox, 0, 0, 3, 1);
+            centerGridPane.add(algoRowHbox, 0, 1, 3, 1);
+            centerGridPane.add(choseFileRowHbox, 0, 2, 3, 1);
+            centerGridPane.add(passwordFieldHbox, 0, 3, 3, 1);
+            centerGridPane.add(buttonHbox, 0, 4, 3, 1);
+
+        }
+
+        // The combo box like to freeze after switching rebuild for some reason.
+        // A focus removal and reapply fixes the issue
+        if (modeComboBox.isFocused()) {
+            choseFileButton.requestFocus();
+            modeComboBox.requestFocus();
+        }
+
+    }
+
     // Test to see if all the fields have values before attempting any action or assigning memory.
     private boolean isReady(boolean isEncryptButton) {
 
         // This animates the status label
         if (!(resetLblThread == null)) { // if the thread holder is initialized
             // Cancel the thread even if there is no thread running
-            resetLblThread.cancel(false);
+            System.out.println("Canceling status label reset");
+            resetLblThread.cancel(true);
 
         }
 
@@ -255,12 +532,11 @@ public class FileEncryptor extends Application {
 
         // If no file is selected
         if (inputFile == null) {
-            statuslbl.setVisible(true);
             if (isEncryptButton)
-                statuslbl.setText("Please choose a file to encrypt!");
+                updateStatus("Please choose a file to encrypt!", true);
 
             else
-                statuslbl.setText("Please choose a file to decrypt!");
+                updateStatus("Please choose a file to decrypt!", true);
 
             return false;
 
@@ -270,8 +546,7 @@ public class FileEncryptor extends Application {
         // No support for multiple encryption
         if (isEncryptButton)
             if (inputFile.toString().contains(".encrypted")) {
-                statuslbl.setVisible(true);
-                statuslbl.setText("File already encrypted!");
+                updateStatus("File already encrypted!", true);
                 return false;
 
             }
@@ -279,20 +554,18 @@ public class FileEncryptor extends Application {
         // If the file is not encrypted and the user is trying to decrypt
         if (!isEncryptButton)
             if (!inputFile.toString().contains(".encrypted")) {
-                statuslbl.setVisible(true);
-                statuslbl.setText("File is not encrypted!");
+                updateStatus("File is not encrypted!", true);
                 return false;
             }
 
         // If no algorithm in the algo drop down has been chosen
         if (!isSimpleMode) {
             if (algoComboBox.getValue() == null) {
-                statuslbl.setVisible(true);
                 if (isEncryptButton)
-                    statuslbl.setText("Please choose an algorithm to encrypt with!");
+                    updateStatus("Please choose an algorithm to encrypt with!", true);
 
                 else
-                    statuslbl.setText("Please choose an algorithm to decrypt with!");
+                    updateStatus("Please choose an algorithm to decrypt with!", true);
 
                 return false;
 
@@ -302,8 +575,7 @@ public class FileEncryptor extends Application {
         // If no key size has been chosen in the key size drop down
         if (!isSimpleMode) {
             if (keyStrengthComboBox.getValue() == null) {
-                statuslbl.setVisible(true);
-                statuslbl.setText("Please chose a key size!");
+                updateStatus("Please chose a key size!", true);
                 return false;
 
             }
@@ -311,12 +583,11 @@ public class FileEncryptor extends Application {
 
         // If no password has been entered
         if ((passwordField.getText().length() == 0)) {
-            statuslbl.setVisible(true);
             if (isEncryptButton)
-                statuslbl.setText("Please enter a password to encrypt the file!");
+                updateStatus("Please enter a password to encrypt the file!", true);
 
             else
-                statuslbl.setText("Please enter a password to decrypt the file!");
+                updateStatus("Please enter a password to decrypt the file!", true);
 
             return false;
 
@@ -356,130 +627,40 @@ public class FileEncryptor extends Application {
 
     }
 
-    // Implementation for the choose file button
-    private void choseFile() {
+    private File determineOutFile(boolean encrypt) {
 
-        // File chooser object, this opens a graphical file chooser for the user
-        fileChooser = new FileChooser();
-        fileChooser.setTitle("Open File to Encrypt");
+        File outputFile = null;
 
-        // make a second stage for the file chooser, so it can't take over the primary stage
-        Stage secondaryStage = new Stage(StageStyle.UTILITY);
+        if (encrypt) {
+            if (inputFile.getName().contains(".decrypted")) {
+                String fileName = inputFile.getName(),
+                        filePath = inputFile.getParent() + "/",
+                        newFile = filePath + fileName.replace(".decrypted", ".encrypted");
 
-        // Try and get a file from the file chooser, fails if the user cancels choosing a file
-        try {
-            inputFile = fileChooser.showOpenDialog(secondaryStage);
+                outputFile = new File(newFile);
 
-        } catch (Exception fileChooserException) {
-            fileChooserException.printStackTrace(System.out);
+            }
 
-        }
-
-        // Make sure the file is a file and not a folder
-        if (!inputFile.isFile()) {
-            statuslbl.setVisible(true);
-            statuslbl.setText("Please only select a file");
-            inputFile = null;
-
-        }
-
-        // If the length of the file and its path are over the size of the file
-        // text field, shorted to the filename
-        else if (inputFile.getAbsoluteFile().length() > 20 ) {
-            fileField.setText(inputFile.getName());
-
-        }
-
-        else
-            fileField.setText(inputFile.getAbsolutePath());
-
-    }
-
-    // When the algorithm combo box selects a algo, refine the algo
-    // spec box to the available algo specs based on the algorithm
-    // chosen by the user
-    private void doAlgoCombBox() {
-
-        if (((String)algoComboBox.getValue()).contains("AES")) {
-            keyStrengthComboBox.getItems().removeAll(128, 192, 256);
-            keyStrengthComboBox.getItems().addAll(128, 256);
+            else {
+                outputFile = new File(inputFile.getAbsolutePath() + ".encrypted");
+            }
 
         }
 
         else {
-            keyStrengthComboBox.getItems().removeAll(128, 192, 256);
-            keyStrengthComboBox.getItems().addAll(192);
 
-        }
-    }
+            if (!inputFile.toString().contains(".encrypted"))
+                throw new IllegalArgumentException("Not a file encrypted by this program");
 
-    private void buildScene(Boolean simpleMode) {
+            String fileName = inputFile.getName(),
+                   filePath = inputFile.getParent() + "/",
+                   newFile = filePath + fileName.replace(".encrypted", ".decrypted");
 
-        if (simpleMode) {
-            for (Node node : nodeArrayList) {
-                if (node instanceof HBox)
-                    gridPane.getChildren().remove(node);
-            }
-            passwordFieldHbox.getChildren().remove(keyStrengthComboBox);
-
-            // Build the scene
-            gridPane.add(modeHbox,0,0,3,1);
-            gridPane.add(choseFileRowHbox,0,1,3,1);
-            gridPane.add(passwordFieldHbox, 0, 2, 3, 1);
-            gridPane.add(buttonHbox,0,3,3,1);
-
-        }
-        else {
-            for (Node node : nodeArrayList) {
-                if (node instanceof HBox) {
-                    gridPane.getChildren().remove(node);
-                }
-            }
-            passwordFieldHbox.getChildren().add(keyStrengthComboBox);
-
-            //Build the scene
-            gridPane.add(modeHbox, 0, 0, 3, 1);
-            gridPane.add(algoRowHbox, 0, 1, 3, 1);
-            gridPane.add(choseFileRowHbox, 0, 2, 3, 1);
-            gridPane.add(passwordFieldHbox, 0, 3, 3, 1);
-            gridPane.add(buttonHbox, 0, 4, 3, 1);
+            outputFile = new File(newFile);
 
         }
 
-        // The combo box like to freeze after switching rebuild for some reason.
-        // A focus removal and reapply fixes the issue
-        if (modeComboBox.isFocused()) {
-            choseFileButton.requestFocus();
-            modeComboBox.requestFocus();
-        }
-
-    }
-
-    private void doModeCombBox() {
-
-        if (((String)modeComboBox.getValue()).contains("Simple")) {
-            buildScene(true);
-            isSimpleMode = true;
-        }
-
-        if (((String)modeComboBox.getValue()).contains("Advanced")) {
-            buildScene(false);
-            isSimpleMode = false;
-        }
-    }
-
-    private void resetEncryptProgress() {
-
-        executor.schedule(new ResetFields(progressBar, fileField, inputFile), 500, TimeUnit.MILLISECONDS);
-
-        resetLabel();
-
-    }
-
-    private void resetLabel() {
-
-        resetLblThread = executor.schedule(new ResetLabel(statuslbl), 5, TimeUnit.SECONDS);
-
+        return outputFile;
     }
 
     // Encrypt method button implementation for the encrypt button.
@@ -490,65 +671,29 @@ public class FileEncryptor extends Application {
         if (!isReady(true))
             return;
 
-        Task encrypTask = new Task() {
-            @Override
-            protected Object call() throws Exception {
-
-                CryptoUtils encryptFile = new CryptoUtils(password, Cipher.ENCRYPT_MODE,
-                                                          algorithm, algoSpec, keyStrength);
-
-                updateProgress(1, 3);
-
-                File outputFile = null;
-
-                if (inputFile.getName().contains(".decrypted")) {
-                    String fileName = inputFile.getName(),
-                            filePath = inputFile.getParent() + "/",
-                            newFile = filePath + fileName.replace(".decrypted", ".encrypted");
-
-                    outputFile = new File(newFile);
-
-                }
-
-                else {
-                    outputFile = new File(inputFile.getAbsolutePath() + ".encrypted");
-
-                }
-
-
-                updateProgress(2, 3);
-
-                encryptFile.doEncryption(encryptFile.getInitializedCipher(), inputFile, outputFile);
-
-                updateProgress(3, 3);
-
-                Platform.runLater( () -> {
-                    statuslbl.setVisible(true);
-                    statuslbl.setText("File Encrypted!");
-                    progressBar.progressProperty().unbind();
-                    resetEncryptProgress();
-
-                });
-
-                return null;
-            }
-        };
-
-        // Set the status label to show that the operation failed based on the task report
-        encrypTask.setOnFailed(y -> {
-            statuslbl.setVisible(true);
-            statuslbl.setText("Failed to encrypt file!");
-            progressBar.progressProperty().unbind();
-            resetEncryptProgress();
-
-        });
+        DoEncryption encryptTask = new DoEncryption(password, algorithm, algoSpec, keyStrength,
+                inputFile, determineOutFile(true));
 
         // Bind the progress bar to the Task progress property for a cleaner
         // and faster progress update
-        progressBar.progressProperty().bind(encrypTask.progressProperty());
+        progressBar.progressProperty().bind(encryptTask.progressProperty());
+
+        encryptTask.setOnSucceeded( sucess -> {
+            updateStatus("File encrypted!");
+            progressBar.progressProperty().unbind();
+            resetAnimations();
+
+        });
+
+        encryptTask.setOnFailed( failed -> {
+            updateStatus("Failed to encrypt!");
+            progressBar.progressProperty().unbind();
+            resetAnimations();
+
+        });
 
         // Do all of the method in a thread to maintain useability of the main stage
-        executor.execute(encrypTask);
+        executor.execute(encryptTask);
 
     }
 
@@ -558,57 +703,29 @@ public class FileEncryptor extends Application {
         if (!isReady(false))
             return;
 
-        Task decrypTask = new Task() {
-            @Override
-            protected Object call() throws Exception {
-
-                CryptoUtils decryptFile = new CryptoUtils(password, Cipher.DECRYPT_MODE,
-                                                          algorithm, algoSpec, keyStrength);
-
-                updateProgress(1, 3);
-
-                if (!inputFile.toString().contains(".encrypted"))
-                    throw new IllegalArgumentException("Not a file encrypted by this program");
-
-                String fileName = inputFile.getName(),
-                       filePath = inputFile.getParent() + "/",
-                       newFile = filePath + fileName.replace(".encrypted", ".decrypted");
-
-                File outputFile = new File(newFile);
-
-                updateProgress(2, 3);
-
-                decryptFile.doDecryption(decryptFile.getInitializedCipher(), inputFile, outputFile);
-
-                updateProgress(3, 3);
-
-                Platform.runLater(() -> {
-                    statuslbl.setVisible(true);
-                    statuslbl.setText("File decrypted!");
-                    progressBar.progressProperty().unbind();
-                    resetEncryptProgress();
-
-                });
-
-                return null;
-            }
-        };
-
-        // Set the status label to show that the operation failed based on the task report
-        decrypTask.setOnFailed(y -> {
-            statuslbl.setVisible(true);
-            statuslbl.setText("Failed to decrypt file!");
-            progressBar.progressProperty().unbind();
-            resetEncryptProgress();
-
-        });
+        DoDecryption decryptTask = new DoDecryption(password, algorithm, algoSpec, keyStrength,
+                inputFile, determineOutFile(false));
 
         // Bind the progress bar to the Task progress property for a cleaner
         // and faster progress update
-        progressBar.progressProperty().bind(decrypTask.progressProperty());
+        progressBar.progressProperty().bind(decryptTask.progressProperty());
+
+        decryptTask.setOnSucceeded( sucess -> {
+            updateStatus("File decrypted!");
+            progressBar.progressProperty().unbind();
+            resetAnimations();
+
+        });
+
+        decryptTask.setOnFailed(y -> {
+            updateStatus("Failed to decrypt file!");
+            progressBar.progressProperty().unbind();
+            resetAnimations();
+
+        });
 
         // Do all of the method in a thread to maintain useability of the main stage
-        executor.execute(decrypTask);
+        executor.execute(decryptTask);
 
     }
 
