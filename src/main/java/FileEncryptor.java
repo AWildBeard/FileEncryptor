@@ -14,8 +14,12 @@
  * limitations under the License.
  */
 
+import javafx.animation.KeyFrame;
+import javafx.animation.Timeline;
 import javafx.application.Application;
 import javafx.application.Platform;
+import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
@@ -24,8 +28,7 @@ import javafx.scene.input.MouseButton;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.paint.Paint;
-import javafx.scene.shape.Circle;
-import javafx.scene.shape.Line;
+import javafx.scene.shape.*;
 import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 import javafx.scene.text.TextAlignment;
@@ -33,7 +36,9 @@ import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import javafx.scene.Scene;
 import javafx.stage.StageStyle;
+import javafx.util.Duration;
 
+import javax.tools.Tool;
 import java.io.*;
 import java.util.*;
 import java.util.concurrent.*;
@@ -110,6 +115,8 @@ public class FileEncryptor extends Application {
                    password,
                    mode1 = "Simple Mode",
                    mode2 = "Advanced Mode";
+
+    private static int dropAnimationCount = 0;
 
     // Threads
     private ScheduledFuture resetLblThread = null;
@@ -210,8 +217,9 @@ public class FileEncryptor extends Application {
 
         VBox control = new VBox();
         HBox titleBar = new HBox();
-        BorderPane borderPane = new BorderPane();
-        VBox leftVbox = new VBox();
+        HBox main = new HBox();
+        VBox leftVBox = new VBox();
+        VBox rightVBox = new VBox();
         HBox leftTopHBox = new HBox();
         StackPane decryptButtonPane = new StackPane();
         StackPane chooseFileButtonPane = new StackPane();
@@ -219,53 +227,241 @@ public class FileEncryptor extends Application {
         StackPane closeButtonPane = new StackPane();
         StackPane minimizeButtonPane = new StackPane();
 
+        Tooltip chooseFileToolTip = new Tooltip();
+        chooseFileToolTip.getStyleClass().add("tool-tip");
+        chooseFileToolTip.setText("Choose files");
+
+        Tooltip decryptFileToolTip = new Tooltip();
+        decryptFileToolTip.getStyleClass().add("tool-tip");
+        decryptFileToolTip.setText("Decrypt files");
+
+        Tooltip encryptFileToolTip = new Tooltip();
+        encryptFileToolTip.getStyleClass().add("tool-tip");
+        encryptFileToolTip.setText("Encrypt files");
+
         Text windowTitle = new Text("File Encryptor");
         windowTitle.setId("title-text");
-        windowTitle.setStyle("-fx-fill: #c5c7c8");
+
+        Label keySize = new Label();
+        keySize.getStyleClass().add("advanced-ui-controls");
+        keySize.setText("Encryption Strength");
+        keySize.setDisable(true);
+
+        Label algoType = new Label();
+        algoType.getStyleClass().add("advanced-ui-controls");
+        algoType.setText("Algorithm");
+        algoType.setDisable(true);
+
+        Label AES = new Label("Advanced Encryption");
+        AES.getStyleClass().add("advanced-ui-controls");
+
+        Label DES = new Label("Triple DES (DESede)");
+        DES.getStyleClass().add("advanced-ui-controls");
+
+        EventHandler<ActionEvent> animate = e -> {
+            dropAnimationCount++;
+            VBox.setMargin(keySize, new Insets(dropAnimationCount, 0, 0, 30));
+        };
+
+        KeyFrame kf1 = new KeyFrame(Duration.millis(4), animate);
+        Timeline dropAnimationTimeLine = new Timeline(kf1);
+        dropAnimationTimeLine.setCycleCount(55);
+        dropAnimationTimeLine.setOnFinished(e -> {
+            leftVBox.getChildren().addAll(4, Arrays.asList(AES, DES));
+            VBox.setMargin(keySize, new Insets(VBox.getMargin(keySize).getTop() - 50, 0, 0, 30));
+        });
+
+        EventHandler<ActionEvent> reverse = e -> {
+            dropAnimationCount--;
+            VBox.setMargin(keySize, new Insets(dropAnimationCount, 0, 0, 30));
+        };
+
+        Timeline dropAnimationTileLineReverse = new Timeline(
+                new KeyFrame(Duration.millis(4), reverse)
+        );
+        dropAnimationTileLineReverse.setCycleCount(55);
+
+        algoType.setOnMouseClicked(e -> {
+            if (VBox.getMargin(keySize).getTop() == 0) {
+                dropAnimationTimeLine.play();
+            }
+            else {
+                if (VBox.getMargin(keySize).getTop() != 55 - 50) {
+                    dropAnimationTileLineReverse.setCycleCount((int) VBox.getMargin(keySize).getTop());
+                    dropAnimationTimeLine.stop();
+                    dropAnimationTileLineReverse.play();
+                }
+                else {
+                    dropAnimationTileLineReverse.setCycleCount(55);
+                    leftVBox.getChildren().removeAll(Arrays.asList(AES, DES));
+                    VBox.setMargin(keySize, new Insets(VBox.getMargin(keySize).getTop() + 55, 0, 0, 30));
+                    dropAnimationTileLineReverse.play();
+                }
+            }
+
+        });
 
         PasswordField passwordField = new PasswordField();
         passwordField.setId("password-field");
         passwordField.setPromptText("Password");
-        passwordField.setStyle("-fx-focus-color: transparent; -fx-faint-focus-color: transparent; -fx-background-color: whitesmoke");
+
+        Circle decryptButton = new Circle();
+        decryptButton.getStyleClass().add("main-buttons");
+        decryptButton.setRadius(25);
+        decryptButton.setOnMouseEntered(e -> {
+            decryptButton.setStyle(
+                    "-fx-effect: dropshadow(three-pass-box, derive(whitesmoke, 20%), 10, 0, 0, 0)"
+            );
+        });
+        decryptButton.setOnMouseExited(e -> decryptButton.setStyle("-fx-effect: null"));
+        Tooltip.install(decryptButton, decryptFileToolTip);
+
+        Circle chooseFileButton = new Circle();
+        chooseFileButton.getStyleClass().add("main-buttons");
+        chooseFileButton.setRadius(30);
+        chooseFileButton.setOnMouseEntered(e -> {
+            chooseFileButton.setStyle(
+                    "-fx-effect: dropshadow(three-pass-box, derive(whitesmoke, 20%), 10, 0, 0, 0)"
+            );
+        });
+        chooseFileButton.setOnMouseExited(e -> chooseFileButton.setStyle("-fx-effect: null"));
+        chooseFileButton.setOnMouseClicked(e -> choseFile());
+        Tooltip.install(chooseFileButton, chooseFileToolTip);
+
+        Circle encryptButton = new Circle();
+        encryptButton.getStyleClass().add("main-buttons");
+        encryptButton.setRadius(25);
+        encryptButton.setOnMouseEntered(e -> {
+            encryptButton.setStyle(
+                    "-fx-effect: dropshadow(three-pass-box, derive(whitesmoke, 20%), 10, 0, 0, 0)"
+            );
+        });
+        encryptButton.setOnMouseExited(e -> encryptButton.setStyle("-fx-effect: null;"));
+        Tooltip.install(encryptButton, encryptFileToolTip);
+
+        Rectangle colorAddition = new Rectangle();
+        colorAddition.getStyleClass().add("main-button-content");
+        colorAddition.setHeight(24);
+        colorAddition.setWidth(219);
+
+        Rectangle colorAddition2 = new Rectangle();
+        colorAddition2.getStyleClass().add("main-button-content");
+        colorAddition2.setHeight(225);
+        colorAddition2.setWidth(24);
+
+        Rectangle lockBase1 = new Rectangle();
+        lockBase1.getStyleClass().add("main-button-content");
+        lockBase1.setWidth(29);
+        lockBase1.setHeight(20);
+        lockBase1.onMouseEnteredProperty().bind(decryptButton.onMouseEnteredProperty());
+        lockBase1.onMouseExitedProperty().bind(decryptButton.onMouseExitedProperty());
+        Tooltip.install(lockBase1, decryptFileToolTip);
+
+        Rectangle lockBase2 = new Rectangle();
+        lockBase2.getStyleClass().add("main-button-content");
+        lockBase2.setWidth(29);
+        lockBase2.setHeight(20);
+        lockBase2.onMouseEnteredProperty().bind(encryptButton.onMouseEnteredProperty());
+        lockBase2.onMouseExitedProperty().bind(encryptButton.onMouseExitedProperty());
+        Tooltip.install(lockBase2, encryptFileToolTip);
+
+        Label modeButton = new Label();
+        modeButton.setText("Advanced");
+        modeButton.getStyleClass().add("advanced-ui-controls");
+        modeButton.setStyle("-fx-base: #3f424d;" +
+                "-fx-fill: whitesmoke;" +
+                "-fx-border-color: transparent;" +
+                "-fx-border-width: 5"
+        );
+        modeButton.setOnMouseClicked(e -> {
+            if (algoType.isDisabled() && keySize.isDisabled()) {
+                algoType.setDisable(false);
+                keySize.setDisable(false);
+            }
+            else {
+                algoType.setDisable(true);
+                keySize.setDisable(true);
+            }
+        });
+
+        Circle closeButton = new Circle();
+        closeButton.setStyle("-fx-fill: red");
+        closeButton.setRadius(8);
+        closeButton.setOnMouseClicked(e -> Platform.exit());
+
+        Circle minimizeButton = new Circle();
+        minimizeButton.setStyle("-fx-fill: goldenrod");
+        minimizeButton.setRadius(8);
+        minimizeButton.setOnMouseClicked(e -> primaryStage.setIconified(true));
+
+        Arc lockBar1 = new Arc();
+        lockBar1.getStyleClass().add("main-button-arcs");
+        lockBar1.setLength(-140f);
+        lockBar1.setStartAngle(0f);
+        lockBar1.setRadiusX(11f);
+        lockBar1.setRadiusY(13f);
+        lockBar1.setType(ArcType.OPEN);
+        lockBar1.setRotate(180f);
+        lockBar1.onMouseEnteredProperty().bind(decryptButton.onMouseEnteredProperty());
+        lockBar1.onMouseExitedProperty().bind(decryptButton.onMouseExitedProperty());
+        Tooltip.install(lockBar1, decryptFileToolTip);
+
+        Arc lockBar2 = new Arc();
+        lockBar2.getStyleClass().add("main-button-arcs");
+        lockBar2.setLength(180f);
+        lockBar2.setStartAngle(0f);
+        lockBar2.setRadiusX(11f);
+        lockBar2.setRadiusY(12f);
+        lockBar2.setType(ArcType.OPEN);
+        lockBar2.onMouseEnteredProperty().bind(encryptButton.onMouseEnteredProperty());
+        lockBar2.onMouseExitedProperty().bind(encryptButton.onMouseExitedProperty());
+        Tooltip.install(lockBar2, encryptFileToolTip);
 
         Line addFileSymbol1 = new Line();
-        Line addFileSymbol2 = new Line();
-        Line closeSymbol1 = new Line();
-        Line closeSymbol2 = new Line();
-        Line minimizeSymbol = new Line();
-
+        addFileSymbol1.getStyleClass().add("main-button-content");
         addFileSymbol1.setStartX(40.0);
         addFileSymbol1.setEndX(1.0);
         addFileSymbol1.setStrokeWidth(9.0);
-        addFileSymbol1.setStroke(Paint.valueOf("#3f424d"));
+        addFileSymbol1.onMouseEnteredProperty().bind(chooseFileButton.onMouseEnteredProperty());
+        addFileSymbol1.onMouseExitedProperty().bind(chooseFileButton.onMouseExitedProperty());
+        addFileSymbol1.onMouseClickedProperty().bind(chooseFileButton.onMouseClickedProperty());
+        Tooltip.install(addFileSymbol1, chooseFileToolTip);
 
+        Line addFileSymbol2 = new Line();
+        addFileSymbol2.getStyleClass().add("main-button-content");
         addFileSymbol2.setStartY(40.0);
         addFileSymbol2.setEndY(1.0);
         addFileSymbol2.setStrokeWidth(9.0);
-        addFileSymbol2.setStroke(Paint.valueOf("#3f424d"));
+        addFileSymbol2.onMouseEnteredProperty().bind(chooseFileButton.onMouseEnteredProperty());
+        addFileSymbol2.onMouseExitedProperty().bind(chooseFileButton.onMouseExitedProperty());
+        addFileSymbol2.onMouseClickedProperty().bind(chooseFileButton.onMouseClickedProperty());
+        Tooltip.install(addFileSymbol2, chooseFileToolTip);
 
+        Line closeSymbol1 = new Line();
         closeSymbol1.setVisible(false);
         closeSymbol1.setOnMouseEntered(e -> closeSymbol1.setVisible(true));
         closeSymbol1.setOnMouseExited(e -> closeSymbol1.setVisible(false));
         closeSymbol1.setOnMouseClicked(e -> Platform.exit());
-        closeSymbol1.setStartX(7.0);
-        closeSymbol1.setEndX(1.0);
-        closeSymbol1.setStartY(7.0);
-        closeSymbol1.setEndY(1.0);
+        closeSymbol1.setStartX(5.5);
+        closeSymbol1.setEndX(-1.0);
+        closeSymbol1.setStartY(-3.5);
+        closeSymbol1.setEndY(3.0);
         closeSymbol1.setStrokeWidth(1.5);
 
+        Line closeSymbol2 = new Line();
         closeSymbol2.setVisible(false);
         closeSymbol2.visibleProperty().bind(closeSymbol1.visibleProperty());
         closeSymbol2.onMouseEnteredProperty().bind(closeSymbol1.onMouseEnteredProperty());
         closeSymbol2.onMouseExitedProperty().bind(closeSymbol1.onMouseExitedProperty());
         closeSymbol2.setPickOnBounds(false);
         closeSymbol2.setOnMouseClicked(e -> Platform.exit());
-        closeSymbol2.setStartX(7.0);
-        closeSymbol2.setEndX(1.0);
-        closeSymbol2.setStartY(-7.0);
-        closeSymbol2.setEndY(-1.0);
+        closeSymbol2.setStartX(5.5);
+        closeSymbol2.setEndX(-1.0);
+        closeSymbol2.setStartY(3.0);
+        closeSymbol2.setEndY(-3.5);
         closeSymbol2.setStrokeWidth(1.5);
 
+        Line minimizeSymbol = new Line();
         minimizeSymbol.setVisible(false);
         minimizeSymbol.setOnMouseEntered(e -> minimizeSymbol.setVisible(true));
         minimizeSymbol.setOnMouseExited(e -> minimizeSymbol.setVisible(false));
@@ -274,51 +470,35 @@ public class FileEncryptor extends Application {
         minimizeSymbol.setEndX(1.0);
         minimizeSymbol.setStrokeWidth(1.75);
 
-        Circle decryptButton = new Circle();
-        decryptButton.setRadius(25);
-        decryptButton.setStyle("-fx-fill: whitesmoke");
-
-        Circle chooseFileButton = new Circle();
-        chooseFileButton.setRadius(30);
-        chooseFileButton.setStyle("-fx-fill: whitesmoke");
-
-        Circle encryptButton = new Circle();
-        encryptButton.setRadius(25);
-        encryptButton.setStyle("-fx-fill: whitesmoke");
-
-        ToggleButton modeButton = new ToggleButton();
-        modeButton.setText("Advanced");
-        modeButton.setId("mode-toggle");
-        modeButton.setStyle("-fx-base: #3f424d;" +
-                "-fx-text-fill: whitesmoke");
-
-        Circle closeButton = new Circle();
-        closeButton.setStyle("-fx-fill: red");
-        closeButton.setRadius(8);
-        closeButton.setOnMouseEntered(e -> closeSymbol1.setVisible(true));
-        closeButton.setOnMouseExited(e -> closeSymbol1.setVisible(false));
-        closeButton.setOnMouseClicked(e -> Platform.exit());
-
-        Circle minimizeButton = new Circle();
-        minimizeButton.setStyle("-fx-fill: goldenrod");
-        minimizeButton.setRadius(8);
-        minimizeButton.setOnMouseEntered(e -> minimizeSymbol.setVisible(true));
-        minimizeButton.setOnMouseExited(e -> minimizeSymbol.setVisible(false));
-        minimizeButton.setOnMouseClicked(e -> primaryStage.setIconified(true));
-
-        control.getChildren().addAll(titleBar, borderPane);
+        control.getChildren().addAll(titleBar, main);
         control.setStyle("-fx-background-color: whitesmoke");
         // control.setStyle("-fx-background-color: #3f424d"); // Dark theme
-        titleBar.getChildren().addAll(windowTitle, minimizeButtonPane, closeButtonPane);
-        titleBar.setStyle("-fx-background-color: black");
-        titleBar.setAlignment(Pos.TOP_RIGHT);
+
+        main.getChildren().addAll(leftVBox, rightVBox);
+
+        leftVBox.getChildren().addAll(leftTopHBox, passwordField, modeButton,
+                algoType, keySize, colorAddition2);
+        VBox.setMargin(passwordField, new Insets(10, 20, 20, 20));
+        VBox.setMargin(modeButton, new Insets(0, 0, 20, 18));
+        VBox.setMargin(algoType, new Insets(0, 0, 0, 30));
+        VBox.setMargin(keySize, new Insets(0, 0, 0, 30));
+        VBox.setMargin(AES, new Insets(0, 0, 0, 50));
+        VBox.setMargin(DES, new Insets(0, 0, 0, 50));
+        // vBox.setStyle("-fx-background-color: whitesmoke"); // Dark theme
+        leftVBox.setStyle("-fx-background-color: #3f424d");
+        leftTopHBox.getChildren().addAll(decryptButtonPane, chooseFileButtonPane, encryptButtonPane);
+        leftTopHBox.setSpacing(10);
+
+        rightVBox.setStyle("-fx-background-color: whitesmoke");
+
+        titleBar.getChildren().addAll(colorAddition, windowTitle, minimizeButtonPane, closeButtonPane);
         titleBar.setSpacing(2);
         titleBar.setMinHeight(22);
-        closeButtonPane.getChildren().addAll(closeButton, closeSymbol1, closeSymbol2);
-        minimizeButtonPane.getChildren().addAll(minimizeButton, minimizeSymbol);
-        HBox.setMargin(closeButtonPane, new Insets(4));
-        HBox.setMargin(minimizeButtonPane, new Insets(4));
-        HBox.setMargin(windowTitle, new Insets(4, 700/3, 4, 0));
+        titleBar.setAlignment(Pos.TOP_LEFT);
+        HBox.setMargin(windowTitle, new Insets(4, (700 / 3) + 15, 4, 0));
+        HBox.setMargin(colorAddition, new Insets(0, 88, 0, 0));
+        StackPane.setMargin(closeSymbol1, new Insets(2, 0, 0, 1));
+        StackPane.setMargin(closeSymbol2, new Insets(2, 0, 0, 1));
         titleBar.setOnMousePressed(e -> {
             if (e.getButton() != MouseButton.MIDDLE) {
                 mouseDragStartX = e.getX();
@@ -331,29 +511,38 @@ public class FileEncryptor extends Application {
                 titleBar.getScene().getWindow().setY(e.getScreenY() - mouseDragStartY);
             }
         });
-        borderPane.setLeft(leftVbox);
-        leftVbox.getChildren().addAll(leftTopHBox, passwordField, modeButton);
-        VBox.setMargin(passwordField, new Insets(10, 20, 20, 20));
-        VBox.setMargin(modeButton, new Insets(0, 20, 20 ,20));
-        // vBox.setStyle("-fx-background-color: whitesmoke"); // Dark theme
-        leftVbox.setStyle("-fx-background-color: #3f424d");
-        leftTopHBox.getChildren().addAll(decryptButtonPane, chooseFileButtonPane, encryptButtonPane);
-        leftTopHBox.setSpacing(10);
-        decryptButtonPane.getChildren().addAll(decryptButton);
-        chooseFileButtonPane.getChildren().addAll(chooseFileButton, addFileSymbol1, addFileSymbol2);
-        encryptButtonPane.getChildren().addAll(encryptButton);
+
+        closeButtonPane.getChildren().addAll(closeButton, closeSymbol1, closeSymbol2);
+        closeButton.setOnMouseEntered(e -> closeSymbol1.setVisible(true));
+        closeButton.setOnMouseExited(e -> closeSymbol1.setVisible(false));
+        minimizeButtonPane.getChildren().addAll(minimizeButton, minimizeSymbol);
+        minimizeButton.setOnMouseEntered(e -> minimizeSymbol.setVisible(true));
+        minimizeButton.setOnMouseExited(e -> minimizeSymbol.setVisible(false));
+        HBox.setMargin(closeButtonPane, new Insets(4));
+        HBox.setMargin(minimizeButtonPane, new Insets(4));
+
+        decryptButtonPane.getChildren().addAll(decryptButton, lockBar1, lockBase1);
         HBox.setMargin(decryptButtonPane, new Insets(10, 0, 20, 20));
-        HBox.setMargin(encryptButtonPane, new Insets(10, 0, 20, 0));
+        StackPane.setMargin(lockBase1, new Insets(13, 0, 0, 0));
+        StackPane.setMargin(lockBar1, new Insets(0, 2, 24, 0));
+
+        chooseFileButtonPane.getChildren().addAll(chooseFileButton, addFileSymbol1, addFileSymbol2);
+        HBox.setMargin(chooseFileButtonPane, new Insets(10, 0, 20, 0));
+
+        encryptButtonPane.getChildren().addAll(encryptButton, lockBar2, lockBase2);
         HBox.setMargin(encryptButtonPane, new Insets(10, 20, 20, 0));
+        StackPane.setMargin(lockBase2, new Insets(13, 0, 0, 0));
+        StackPane.setMargin(lockBar2, new Insets(0, 0, 22, 0));
 
         // Add the main parent to the scene
         Scene root = new Scene(control, 700, 450);
+        root.getStylesheets().add("css/StyleSheet.css");
 
         this.primaryStage.focusedProperty().addListener(e -> {
             if (primaryStage.isFocused()) {
                 closeButton.setStyle("-fx-fill: red");
                 minimizeButton.setStyle("-fx-fill: goldenrod");
-                windowTitle.setStyle("-fx-fill: #c5c7c8");
+                windowTitle.setStyle("-fx-fill: black");
             }
             else {
                 closeButton.setStyle("-fx-fill: dimgrey");
@@ -372,6 +561,7 @@ public class FileEncryptor extends Application {
         // can only be done once the gridpane is shown on the scene
         progressBar.setPrefWidth(centerGridPane.getWidth());
 
+        windowTitle.requestFocus();
     }
 
     // For IDE's of limited capability

@@ -1,0 +1,33 @@
+#title-text {
+    -fx-fill: black;
+}
+#password-field {
+    -fx-focus-color: transparent;
+    -fx-faint-focus-color: transparent;
+    -fx-background-color: whitesmoke;
+}
+.main-buttons {
+    -fx-fill: whitesmoke;
+}
+.main-button-content {
+    -fx-stroke: #3f424d;
+    -fx-fill: #3f424d
+}
+.main-button-arcs {
+    -fx-fill: whitesmoke;
+    -fx-stroke-width: 7;
+    -fx-stroke: #3f424d;
+}
+.tool-tip {
+    -fx-background-color: #3f424d;
+    -fx-text-fill: whitesmoke;
+}
+.advanced-ui-controls {
+    -fx-base: #3f424d;
+    -fx-fill: whitesmoke;
+    -fx-border-color: transparent;
+    -fx-border-width: 5;
+}
+
+
+
