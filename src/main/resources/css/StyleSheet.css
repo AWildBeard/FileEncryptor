@@ -28,6 +28,18 @@
     -fx-border-color: transparent;
     -fx-border-width: 5;
 }
+.control-menu-separators {
+    -fx-stroke: whitesmoke;
+}
+.main-button-sealer, .toolbar-button-sealer {
+    -fx-fill: transparent;
+}
+.white-based-background {
+    -fx-background-color: whitesmoke;
+}
+.side-panel-based-color {
+    -fx-background-color: #3f424d;
+}
 
 
 
