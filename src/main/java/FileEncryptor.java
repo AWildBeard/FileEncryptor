@@ -20,10 +20,12 @@ import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
+import javafx.event.EventType;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.*;
 import javafx.scene.input.MouseButton;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.*;
 import javafx.scene.shape.*;
 import javafx.scene.text.Text;
@@ -271,6 +273,14 @@ public class FileEncryptor extends Application {
         encryptFileToolTip.setText("Encrypt files");
         passwordField.setPromptText("Password");
 
+        statusCircle1.setStyle("-fx-fill: green");
+        statusCircle2.setStyle("-fx-fill: green");
+        statusCircle3.setStyle("-fx-fill: gray");
+        statusCircle4.setStyle("-fx-fill: green");
+        statusCircle5.setStyle("-fx-fill: green");
+        statusCircle6.setStyle("-fx-fill: gray");
+        statusCircle7.setStyle("-fx-fill: gray");
+
         bit128.setVisible(false);
         statusCircle5.setVisible(false);
         bit192.setVisible(false);
@@ -471,18 +481,83 @@ public class FileEncryptor extends Application {
         Tooltip.install(encryptButtonSealer, encryptFileToolTip);
 
         AES.setOnMouseClicked(e -> {
+
             algorithm = aes1;
             algoSpec = "AES";
+            statusCircle1.setStyle("-fx-fill: green");
+            statusCircle2.setStyle("-fx-fill: green");
+            statusCircle3.setStyle("-fx-fill: gray");
+            if (! (keyStrength == 128 ||  keyStrength == 256)) {
+
+                keyStrength = null;
+                statusCircle4.setStyle("-fx-fill: orange");
+                statusCircle5.setStyle("-fx-fill: orange");
+                statusCircle6.setStyle("-fx-fill: gray");
+                statusCircle7.setStyle("-fx-fill: orange");
+
+            }
+
         });
 
         DES.setOnMouseClicked(e -> {
+
             algorithm = desede1;
             algoSpec = "DES";
+            statusCircle1.setStyle("-fx-fill: green");
+            statusCircle2.setStyle("-fx-fill: gray");
+            keyStrength = 192;
+            statusCircle3.setStyle("-fx-fill: green");
+            statusCircle4.setStyle("-fx-fill: green");
+            statusCircle5.setStyle("-fx-fill: gray");
+            statusCircle6.setStyle("-fx-fill: green");
+            statusCircle7.setStyle("-fx-fill: gray");
+
         });
 
-        bit128.setOnMouseClicked(e -> keyStrength = 128);
-        bit192.setOnMouseClicked(e -> keyStrength = 192);
-        bit256.setOnMouseClicked(e -> keyStrength = 256);
+        bit128.setOnMouseClicked(e -> {
+
+            keyStrength = 128;
+            algorithm = aes1;
+            algoSpec = "AES";
+            statusCircle1.setStyle("-fx-fill: green");
+            statusCircle2.setStyle("-fx-fill: green");
+            statusCircle3.setStyle("-fx-fill: gray");
+            statusCircle4.setStyle("-fx-fill: green");
+            statusCircle5.setStyle("-fx-fill: green");
+            statusCircle6.setStyle("-fx-fill: gray");
+            statusCircle7.setStyle("-fx-fill: orange");
+
+        });
+
+        bit192.setOnMouseClicked(e -> {
+
+            keyStrength = 192;
+            algorithm = desede1;
+            algoSpec = "DES";
+            statusCircle1.setStyle("-fx-fill: green");
+            statusCircle2.setStyle("-fx-fill: gray");
+            statusCircle3.setStyle("-fx-fill: green");
+            statusCircle4.setStyle("-fx-fill: green");
+            statusCircle5.setStyle("-fx-fill: gray");
+            statusCircle6.setStyle("-fx-fill: green");
+            statusCircle7.setStyle("-fx-fill: gray");
+
+        });
+
+        bit256.setOnMouseClicked(e -> {
+
+            keyStrength = 256;
+            algorithm = aes1;
+            algoSpec = "AES";
+            statusCircle1.setStyle("-fx-fill: green");
+            statusCircle2.setStyle("-fx-fill: green");
+            statusCircle3.setStyle("-fx-fill: gray");
+            statusCircle4.setStyle("-fx-fill: green");
+            statusCircle5.setStyle("-fx-fill: orange");
+            statusCircle6.setStyle("-fx-fill: gray");
+            statusCircle7.setStyle("-fx-fill: green");
+
+        });
 
         // Encryption Strength dropdown
         keySize.setOnMouseClicked(e -> {
@@ -513,7 +588,7 @@ public class FileEncryptor extends Application {
         titleBar.getChildren().addAll(colorAddition, windowTitle, minimizeButtonPane, closeButtonPane);
 
         closeButtonPane.getChildren().addAll(closeButton, closeSymbol1, closeSymbol2, closeButtonSealer);
-        minimizeButtonPane.getChildren().addAll(minimizeButton, minimizeSymbol);
+        minimizeButtonPane.getChildren().addAll(minimizeButton, minimizeSymbol, minimizeButtonSealer);
 
         mainScene.getChildren().addAll(leftVBox, rightVBox);
 
