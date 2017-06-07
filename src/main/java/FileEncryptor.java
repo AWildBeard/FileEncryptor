@@ -59,24 +59,24 @@ public class FileEncryptor extends Application {
 
     // Containers
     private VBox root = new VBox();
-    private HBox titleBar = new HBox();
-    private HBox mainScene = new HBox();
-    private VBox leftVBox = new VBox();
-    private VBox rightVBox = new VBox();
-    private HBox leftTopHBox = new HBox();
-    private HBox advSeperatorHBox = new HBox();
-    private HBox algoTypeContainer = new HBox(),
+    private HBox titleBar = new HBox(),
+            mainScene = new HBox();
+    private VBox leftVBox = new VBox(),
+            rightVBox = new VBox();
+    private HBox leftTopHBox = new HBox(),
+            advSeperatorHBox = new HBox(),
+            algoTypeContainer = new HBox(),
             keySizeContainer = new HBox(),
             AESContainer = new HBox(),
             DESContainer = new HBox(),
             bit128Container = new HBox(),
             bit192Container = new HBox(),
             bit256Container = new HBox();
-    private StackPane decryptButtonPane = new StackPane();
-    private StackPane chooseFileButtonPane = new StackPane();
-    private StackPane encryptButtonPane = new StackPane();
-    private StackPane closeButtonPane = new StackPane();
-    private StackPane minimizeButtonPane = new StackPane();
+    private StackPane decryptButtonPane = new StackPane(),
+            chooseFileButtonPane = new StackPane(),
+            encryptButtonPane = new StackPane(),
+            closeButtonPane = new StackPane(),
+            minimizeButtonPane = new StackPane();
 
     // Nodes
     private Tooltip chooseFileToolTip = new Tooltip(),
@@ -221,6 +221,7 @@ public class FileEncryptor extends Application {
     public static void main(String[] args) { launch(args); }
 
     private void initUI() {
+
         assignStyleClass();
         setVisibleProperties();
         setInteractions();
@@ -451,9 +452,12 @@ public class FileEncryptor extends Application {
             );
         });
         decryptButton.setOnMouseExited(e -> decryptButton.setStyle("-fx-effect: null"));
-        decryptButton.setOnMouseClicked(e -> doDecrypt());
         decryptButtonSealer.onMouseEnteredProperty().bind(decryptButton.onMouseEnteredProperty());
         decryptButtonSealer.onMouseExitedProperty().bind(decryptButton.onMouseExitedProperty());
+        decryptButtonSealer.setOnMouseClicked(e -> {
+            password = passwordField.getText();
+            doDecrypt();
+        });
         Tooltip.install(decryptButtonSealer, decryptFileToolTip);
 
         // Choose file button functionality
@@ -463,9 +467,9 @@ public class FileEncryptor extends Application {
             );
         });
         chooseFileButton.setOnMouseExited(e -> chooseFileButton.setStyle("-fx-effect: null"));
-        chooseFileButton.setOnMouseClicked(e -> choseFile());
         chooseFileButtonSealer.onMouseEnteredProperty().bind(chooseFileButton.onMouseEnteredProperty());
         chooseFileButtonSealer.onMouseExitedProperty().bind(chooseFileButton.onMouseExitedProperty());
+        chooseFileButtonSealer.setOnMouseClicked(e -> choseFile());
         Tooltip.install(chooseFileButtonSealer, chooseFileToolTip);
 
         // Encrypt button functionality
@@ -475,9 +479,12 @@ public class FileEncryptor extends Application {
             );
         });
         encryptButton.setOnMouseExited(e -> encryptButton.setStyle("-fx-effect: null;"));
-        encryptButton.setOnMouseClicked(e -> doEncrypt());
         encryptButtonSealer.onMouseEnteredProperty().bind(encryptButton.onMouseEnteredProperty());
         encryptButtonSealer.onMouseExitedProperty().bind(encryptButton.onMouseExitedProperty());
+        encryptButtonSealer.setOnMouseClicked(e -> {
+            password = passwordField.getText();
+            doEncrypt();
+        });
         Tooltip.install(encryptButtonSealer, encryptFileToolTip);
 
         AES.setOnMouseClicked(e -> {
@@ -502,7 +509,7 @@ public class FileEncryptor extends Application {
         DES.setOnMouseClicked(e -> {
 
             algorithm = desede1;
-            algoSpec = "DES";
+            algoSpec = "DESede";
             statusCircle1.setStyle("-fx-fill: green");
             statusCircle2.setStyle("-fx-fill: gray");
             keyStrength = 192;
@@ -533,7 +540,7 @@ public class FileEncryptor extends Application {
 
             keyStrength = 192;
             algorithm = desede1;
-            algoSpec = "DES";
+            algoSpec = "DESede";
             statusCircle1.setStyle("-fx-fill: green");
             statusCircle2.setStyle("-fx-fill: gray");
             statusCircle3.setStyle("-fx-fill: green");
@@ -585,41 +592,34 @@ public class FileEncryptor extends Application {
 
         root.getChildren().addAll(titleBar, mainScene);
 
+        // Title bar
         titleBar.getChildren().addAll(colorAddition, windowTitle, minimizeButtonPane, closeButtonPane);
-
         closeButtonPane.getChildren().addAll(closeButton, closeSymbol1, closeSymbol2, closeButtonSealer);
         minimizeButtonPane.getChildren().addAll(minimizeButton, minimizeSymbol, minimizeButtonSealer);
 
+        // Main window (under the title bar)
         mainScene.getChildren().addAll(leftVBox, rightVBox);
 
+        // Left VBox
         leftVBox.getChildren().addAll(leftTopHBox, passwordField, advSeperatorHBox,
                 algoTypeContainer, keySizeContainer, bit128Container,
                 bit192Container, bit256Container, colorAddition2);
-
         algoTypeContainer.getChildren().addAll(statusCircle1, algoType);
-
         AESContainer.getChildren().addAll(statusCircle2, AES);
-
         DESContainer.getChildren().addAll(statusCircle3, DES);
-
         keySizeContainer.getChildren().addAll(statusCircle4, keySize);
-
         bit128Container.getChildren().addAll(statusCircle5, bit128);
-
         bit192Container.getChildren().addAll(statusCircle6, bit192);
-
         bit256Container.getChildren().addAll(statusCircle7, bit256);
-
         leftTopHBox.getChildren().addAll(decryptButtonPane, chooseFileButtonPane, encryptButtonPane);
-
         decryptButtonPane.getChildren().addAll(decryptButton, lockBar1, lockBase1, decryptButtonSealer);
-
         chooseFileButtonPane.getChildren().addAll(chooseFileButton, addFileSymbol1,
                 addFileSymbol2, chooseFileButtonSealer);
-
         encryptButtonPane.getChildren().addAll(encryptButton, lockBar2, lockBase2, encryptButtonSealer);
-
         advSeperatorHBox.getChildren().addAll(advLabelSpacer1, advLabel, advLabelSpacer2);
+
+        // Right VBox
+
 
     }
 

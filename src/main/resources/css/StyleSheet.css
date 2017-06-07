@@ -6,7 +6,7 @@
     -fx-faint-focus-color: transparent;
     -fx-background-color: whitesmoke;
 }
-.main-buttons {
+.main-buttons, .white-based-background {
     -fx-fill: whitesmoke;
 }
 .main-button-content {
@@ -33,9 +33,6 @@
 }
 .main-button-sealer, .toolbar-button-sealer {
     -fx-fill: transparent;
-}
-.white-based-background {
-    -fx-background-color: whitesmoke;
 }
 .side-panel-based-color {
     -fx-background-color: #3f424d;
