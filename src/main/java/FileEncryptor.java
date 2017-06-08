@@ -64,6 +64,7 @@ public class FileEncryptor extends Application {
     private VBox leftVBox = new VBox(),
             rightVBox = new VBox();
     private HBox leftTopHBox = new HBox(),
+            fileCounts = new HBox(),
             advSeperatorHBox = new HBox(),
             algoTypeContainer = new HBox(),
             keySizeContainer = new HBox(),
@@ -77,6 +78,8 @@ public class FileEncryptor extends Application {
             encryptButtonPane = new StackPane(),
             closeButtonPane = new StackPane(),
             minimizeButtonPane = new StackPane();
+    private ScrollPane fileWindow = new ScrollPane();
+    private VBox fileWindowContents = new VBox();
 
     // Nodes
     private Tooltip chooseFileToolTip = new Tooltip(),
@@ -90,7 +93,9 @@ public class FileEncryptor extends Application {
             bit128 = new Label("128"),
             bit192 = new Label("192"),
             bit256 = new Label("256"),
-            advLabel = new Label("Advanced");
+            advLabel = new Label("Advanced"),
+            filesDone = new Label("Files complete  = 0"),
+            filesQued = new Label("Files Que'd = 0");
     private PasswordField passwordField = new PasswordField();
     private Circle decryptButton = new Circle(),
             decryptButtonSealer = new Circle(),
@@ -121,7 +126,10 @@ public class FileEncryptor extends Application {
             closeSymbol2 = new Line(),
             minimizeSymbol = new Line(),
             advLabelSpacer1 = new Line(),
-            advLabelSpacer2 = new Line();
+            advLabelSpacer2 = new Line(),
+            topLine = new Line(),
+            bottomLine = new Line();
+
 
     // Encryption items
     private String aes1 = "AES/CBC/PKCS5Padding",
@@ -274,6 +282,15 @@ public class FileEncryptor extends Application {
         encryptFileToolTip.setText("Encrypt files");
         passwordField.setPromptText("Password");
 
+        topLine.setStartX(0f);
+        topLine.setEndX(440f);
+        bottomLine.setStartX(0f);
+        bottomLine.setEndX(440f);
+
+        topLine.setStyle("-fx-stroke: gray");
+        bottomLine.setStyle("-fx-stroke: gray");
+        fileWindow.setStyle("-fx-border-color: whitesmoke");
+
         statusCircle1.setStyle("-fx-fill: green");
         statusCircle2.setStyle("-fx-fill: green");
         statusCircle3.setStyle("-fx-fill: gray");
@@ -397,6 +414,18 @@ public class FileEncryptor extends Application {
         StackPane.setMargin(lockBase2, new Insets(13, 0, 0, 0));
         StackPane.setMargin(lockBar1, new Insets(0, 2, 24, 0));
         StackPane.setMargin(lockBar2, new Insets(0, 0, 22, 0));
+
+        VBox.setMargin(topLine, new Insets(30, 20, 30, 20));
+        VBox.setMargin(fileWindow, new Insets(0, 20, 0, 20));
+        VBox.setMargin(bottomLine, new Insets(30, 20, 0, 20));
+
+        fileWindow.setMinHeight(275f);
+        fileWindow.setMaxHeight(275f);
+        fileWindow.setPrefHeight(275f);
+
+        HBox.setMargin(filesDone, new Insets(10, 5, 0, 0));
+        HBox.setMargin(filesQued, new Insets(10, 0, 0, 5));
+
 
     }
 
@@ -619,7 +648,10 @@ public class FileEncryptor extends Application {
         advSeperatorHBox.getChildren().addAll(advLabelSpacer1, advLabel, advLabelSpacer2);
 
         // Right VBox
-
+        rightVBox.getChildren().addAll(topLine, fileWindow, bottomLine, fileCounts);
+        fileWindow.setContent(fileWindowContents);
+        fileCounts.getChildren().addAll(filesDone, filesQued);
+        fileCounts.setAlignment(Pos.CENTER);
 
     }
 
