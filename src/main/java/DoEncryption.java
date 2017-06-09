@@ -33,7 +33,7 @@ public class DoEncryption extends Task {
 
     }
 
-    public Void call() throws InvalidKeySpecException, NoSuchAlgorithmException, NoSuchPaddingException,
+    public synchronized Void call() throws InvalidKeySpecException, NoSuchAlgorithmException, NoSuchPaddingException,
             InvalidParameterSpecException, InvalidKeyException,
             InvalidAlgorithmParameterException, IOException {
 

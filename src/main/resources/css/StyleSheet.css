@@ -6,6 +6,11 @@
     -fx-faint-focus-color: transparent;
     -fx-background-color: whitesmoke;
 }
+.progress-bar, .bar {
+    -fx-control-inner-background: transparent;
+    -fx-padding: 5;
+    -fx-background-insets: 0;
+}
 .main-buttons, .white-based-background {
     -fx-fill: whitesmoke;
 }

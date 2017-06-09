@@ -47,10 +47,13 @@ public class FileEncryptor extends Application {
     private Stage primaryStage;
 
     // Thread executor
-    private ScheduledExecutorService executor = Executors.newScheduledThreadPool(4);
+    private ExecutorService executor = Executors.newFixedThreadPool(1);
 
-    // File object
-    private List<File> inputFiles = null;
+    // File objects
+    private ArrayList<File> inputFiles = new ArrayList<>();
+
+    // File widget array list
+    private ArrayList<FileWidgetWithProgressBar> fileWidgets = new ArrayList<>();
 
     // Window drag properties
     private Double mouseDragStartX, mouseDragStartY;
@@ -62,7 +65,6 @@ public class FileEncryptor extends Application {
     private VBox leftVBox = new VBox(),
             rightVBox = new VBox();
     private HBox leftTopHBox = new HBox(),
-            fileCounts = new HBox(),
             advSeperatorHBox = new HBox(),
             algoTypeContainer = new HBox(),
             keySizeContainer = new HBox(),
@@ -92,8 +94,7 @@ public class FileEncryptor extends Application {
             bit192 = new Label("192"),
             bit256 = new Label("256"),
             advLabel = new Label("Advanced"),
-            filesDone = new Label("Files complete  = 0"),
-            filesQued = new Label("Files Que'd = 0");
+            dropFilesHere = new Label("Drag n' Drop files here");
     private PasswordField passwordField = new PasswordField();
     private Circle decryptButton = new Circle(),
             decryptButtonSealer = new Circle(),
@@ -285,9 +286,15 @@ public class FileEncryptor extends Application {
         bottomLine.setStartX(0f);
         bottomLine.setEndX(440f);
 
-        topLine.setStyle("-fx-stroke: gray");
-        bottomLine.setStyle("-fx-stroke: gray");
+        // TODO: Implement CSS
+        topLine.setStyle("-fx-stroke: lightgray");
+        bottomLine.setStyle("-fx-stroke: lightgray");
         fileWindow.setStyle("-fx-border-color: whitesmoke");
+        fileWindow.setStyle("-fx-faint-focus-color: transparent;" +
+                "-fx-focus-color: transparent;" +
+                "-fx-border-color: whitesmoke");
+        dropFilesHere.setStyle("-fx-text-fill: gray");
+        // END TODO
 
         statusCircle1.setStyle("-fx-fill: green");
         statusCircle2.setStyle("-fx-fill: green");
@@ -399,30 +406,34 @@ public class FileEncryptor extends Application {
         VBox.setMargin(advSeperatorHBox, new Insets(0, 0, 10, 20));
         HBox.setMargin(advLabelSpacer1, new Insets(13, 0, 0, 0));
         HBox.setMargin(advLabelSpacer2, new Insets(13, 0, 0, 0));
-        HBox.setMargin(windowTitle, new Insets(4, (700 / 3) + 15, 4, 0));
+        HBox.setMargin(windowTitle, new Insets(9, 245, 4, 0));
         HBox.setMargin(colorAddition, new Insets(0, 88, 0, 0));
-        HBox.setMargin(closeButtonPane, new Insets(4));
-        HBox.setMargin(minimizeButtonPane, new Insets(4));
+        HBox.setMargin(closeButtonPane, new Insets(8, 0, 0, 0));
+        HBox.setMargin(minimizeButtonPane, new Insets(8, 8, 0, 0));
         HBox.setMargin(decryptButtonPane, new Insets(10, 0, 20, 20));
         HBox.setMargin(chooseFileButtonPane, new Insets(10, 0, 20, 0));
         HBox.setMargin(encryptButtonPane, new Insets(10, 20, 20, 0));
-        StackPane.setMargin(closeSymbol1, new Insets(2, 0, 0, 1));
-        StackPane.setMargin(closeSymbol2, new Insets(2, 0, 0, 1));
+        StackPane.setMargin(closeSymbol1, new Insets(1.4, 0, 0, 1));
+        StackPane.setMargin(closeSymbol2, new Insets(1.4, 0, 0, 1));
         StackPane.setMargin(lockBase1, new Insets(13, 0, 0, 0));
         StackPane.setMargin(lockBase2, new Insets(13, 0, 0, 0));
         StackPane.setMargin(lockBar1, new Insets(0, 2, 24, 0));
         StackPane.setMargin(lockBar2, new Insets(0, 0, 22, 0));
 
-        VBox.setMargin(topLine, new Insets(30, 20, 30, 20));
+        VBox.setMargin(topLine, new Insets(30, 20, 15, 20));
         VBox.setMargin(fileWindow, new Insets(0, 20, 0, 20));
-        VBox.setMargin(bottomLine, new Insets(30, 20, 0, 20));
+        VBox.setMargin(bottomLine, new Insets(15, 20, 0, 20));
 
-        fileWindow.setMinHeight(275f);
-        fileWindow.setMaxHeight(275f);
-        fileWindow.setPrefHeight(275f);
+        fileWindow.setMinHeight(340f);
+        fileWindow.setMaxHeight(340f);
+        fileWindow.setPrefHeight(340f);
 
-        HBox.setMargin(filesDone, new Insets(10, 5, 0, 0));
-        HBox.setMargin(filesQued, new Insets(10, 0, 0, 5));
+        fileWindow.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
+        fileWindow.setVbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
+
+        fileWindowContents.setSpacing(10);
+
+        VBox.setMargin(dropFilesHere, new Insets(160, 0, 0, 150));
 
 
     }
@@ -612,6 +623,8 @@ public class FileEncryptor extends Application {
                 statusCircle7.setVisible(true);
             }
         });
+        // TODO: Implement Drag n' drop
+        // END TODO
 
     }
 
@@ -646,10 +659,9 @@ public class FileEncryptor extends Application {
         advSeperatorHBox.getChildren().addAll(advLabelSpacer1, advLabel, advLabelSpacer2);
 
         // Right VBox
-        rightVBox.getChildren().addAll(topLine, fileWindow, bottomLine, fileCounts);
+        rightVBox.getChildren().addAll(topLine, fileWindow, bottomLine);
         fileWindow.setContent(fileWindowContents);
-        fileCounts.getChildren().addAll(filesDone, filesQued);
-        fileCounts.setAlignment(Pos.CENTER);
+        fileWindowContents.getChildren().add(dropFilesHere);
 
     }
 
@@ -664,16 +676,41 @@ public class FileEncryptor extends Application {
         // make a second stage for the file chooser, so it can't take over the primary stage
         Stage secondaryStage = new Stage(StageStyle.UTILITY);
 
+        int startingLocation = 0;
+
         // Try and get a file from the file chooser, fails if the user cancels choosing a file
         try {
-            inputFiles = fileChooser.showOpenMultipleDialog(secondaryStage);
+            if (inputFiles.isEmpty()) {
+                inputFiles.addAll(fileChooser.showOpenMultipleDialog(secondaryStage));
+            }
+            else {
+                startingLocation = inputFiles.size();
+                inputFiles.addAll(fileChooser.showOpenMultipleDialog(secondaryStage));
+
+            }
 
         } catch (Exception fileChooserException) {
-            fileChooserException.printStackTrace(System.out);
+            // Do nothing
 
+        } finally {
+            if (! inputFiles.isEmpty()) {
+                if (fileWindowContents.getChildren().contains(dropFilesHere)) {
+                    fileWindowContents.getChildren().remove(dropFilesHere);
+                    for (int count = 0; count < inputFiles.size(); count++) {
+                        fileWidgets.add(new FileWidgetWithProgressBar(inputFiles.get(count)));
+                        fileWindowContents.getChildren().add(fileWidgets.get(count));
+
+                    }
+                }
+                else {
+                    do {
+                        fileWidgets.add(new FileWidgetWithProgressBar(inputFiles.get(startingLocation)));
+                        fileWindowContents.getChildren().add(fileWidgets.get(startingLocation++));
+
+                    } while (startingLocation < inputFiles.size());
+                }
+            }
         }
-        fileWindowContents.getChildren().add(new Label("Sucess"));
-
     }
 
     private File determineOutFile(boolean encrypt, File inputFile) {
@@ -716,9 +753,24 @@ public class FileEncryptor extends Application {
     // This method also determines the name of the file to write/ read from
     private void doEncrypt() {
 
-        for (File inputFile : inputFiles) {
+        for (int count = 0 ; count < inputFiles.size() ; count++) {
             DoEncryption encryptTask = new DoEncryption(password, algorithm, algoSpec, keyStrength,
-                    inputFile, determineOutFile(true, inputFile));
+                    inputFiles.get(count), determineOutFile(true, inputFiles.get(count)));
+
+            fileWidgets.get(count).getProgressProperty().bind(encryptTask.progressProperty());
+
+            encryptTask.setOnSucceeded(e -> {
+                EventHandler<ActionEvent> removeFileWidget = y -> {
+                    fileWindowContents.getChildren().remove(0);
+                    inputFiles.remove(0);
+                    fileWidgets.remove(0);
+                };
+
+                Timeline timeline = new Timeline(new KeyFrame(Duration.millis(750), removeFileWidget));
+                timeline.setCycleCount(0);
+                timeline.play();
+
+            });
 
             executor.execute(encryptTask);
         }
