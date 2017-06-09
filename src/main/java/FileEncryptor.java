@@ -20,12 +20,10 @@ import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
-import javafx.event.EventType;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.*;
 import javafx.scene.input.MouseButton;
-import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.*;
 import javafx.scene.shape.*;
 import javafx.scene.text.Text;
@@ -52,7 +50,7 @@ public class FileEncryptor extends Application {
     private ScheduledExecutorService executor = Executors.newScheduledThreadPool(4);
 
     // File object
-    private File inputFile = null;
+    private List<File> inputFiles = null;
 
     // Window drag properties
     private Double mouseDragStartX, mouseDragStartY;
@@ -668,16 +666,17 @@ public class FileEncryptor extends Application {
 
         // Try and get a file from the file chooser, fails if the user cancels choosing a file
         try {
-            inputFile = fileChooser.showOpenDialog(secondaryStage);
+            inputFiles = fileChooser.showOpenMultipleDialog(secondaryStage);
 
         } catch (Exception fileChooserException) {
             fileChooserException.printStackTrace(System.out);
 
         }
+        fileWindowContents.getChildren().add(new Label("Sucess"));
 
     }
 
-    private File determineOutFile(boolean encrypt) {
+    private File determineOutFile(boolean encrypt, File inputFile) {
 
         File outputFile = null;
 
@@ -717,25 +716,22 @@ public class FileEncryptor extends Application {
     // This method also determines the name of the file to write/ read from
     private void doEncrypt() {
 
-        DoEncryption encryptTask = new DoEncryption(password, algorithm, algoSpec, keyStrength,
-                inputFile, determineOutFile(true));
+        for (File inputFile : inputFiles) {
+            DoEncryption encryptTask = new DoEncryption(password, algorithm, algoSpec, keyStrength,
+                    inputFile, determineOutFile(true, inputFile));
 
-        // Bind the progress bar to the Task progress property for a cleaner
-        // and faster progress update
-
-        // Do all of the method in a thread to maintain useability of the main stage
-        executor.execute(encryptTask);
-
+            executor.execute(encryptTask);
+        }
     }
 
     private void doDecrypt() {
 
-        DoDecryption decryptTask = new DoDecryption(password, algorithm, algoSpec, keyStrength,
-                inputFile, determineOutFile(false));
+        for (File inputFile : inputFiles) {
+            DoDecryption decryptTask = new DoDecryption(password, algorithm, algoSpec, keyStrength,
+                    inputFile, determineOutFile(false, inputFile));
 
-        // Do all of the method in a thread to maintain useability of the main stage
-        executor.execute(decryptTask);
-
+            executor.execute(decryptTask);
+        }
     }
 
 }
