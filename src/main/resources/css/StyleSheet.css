@@ -1,6 +1,3 @@
-#title-text {
-    -fx-fill: black;
-}
 #password-field {
     -fx-focus-color: transparent;
     -fx-faint-focus-color: transparent;
@@ -42,6 +39,17 @@
 .side-panel-based-color {
     -fx-background-color: #3f424d;
 }
-
+.line {
+    -fx-stroke: lightgray;
+}
+#fileWindow {
+    -fx-border-color: whitesmoke;
+    -fx-border-color: whitesmoke;
+    -fx-focus-color: transparent;
+    -fx-faint-focus-color: transparent;
+}
+#fileWindow-info-widget {
+    -fx-text-fill: gray;
+}
 
 
