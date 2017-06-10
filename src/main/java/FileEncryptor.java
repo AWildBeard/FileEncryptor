@@ -72,7 +72,8 @@ public class FileEncryptor extends Application {
             DESContainer = new HBox(),
             bit128Container = new HBox(),
             bit192Container = new HBox(),
-            bit256Container = new HBox();
+            bit256Container = new HBox(),
+            topBarHBox = new HBox();
     private StackPane decryptButtonPane = new StackPane(),
             chooseFileButtonPane = new StackPane(),
             encryptButtonPane = new StackPane(),
@@ -85,7 +86,9 @@ public class FileEncryptor extends Application {
     private Tooltip chooseFileToolTip = new Tooltip(),
             decryptFileToolTip = new Tooltip(),
             encryptFileToolTip = new Tooltip();
-    private Text windowTitle = new Text("File Encryptor");
+    private Text windowTitle = new Text("File Encryptor"),
+            fileNameText = new Text("File Name"),
+            fileSizeText = new Text("File Size");
     private Label keySize = new Label("Encryption Strength"),
             algoType = new Label("Algorithm"),
             AES = new Label("Advanced Encryption"),
@@ -126,7 +129,9 @@ public class FileEncryptor extends Application {
             minimizeSymbol = new Line(),
             advLabelSpacer1 = new Line(),
             advLabelSpacer2 = new Line(),
-            topLine = new Line(),
+            topLine1 = new Line(),
+            topLine2 = new Line(),
+            topLine3 = new Line(),
             bottomLine = new Line();
 
 
@@ -205,7 +210,7 @@ public class FileEncryptor extends Application {
         });
 
         // Add the main parent to the scene
-        Scene primaryScene = new Scene(root, 700, 450);
+        Scene primaryScene = new Scene(root, 725, 450);
 
         // Add the css stylesheet to the scene
         primaryScene.getStylesheets().add("css/StyleSheet.css");
@@ -281,13 +286,19 @@ public class FileEncryptor extends Application {
         encryptFileToolTip.setText("Encrypt files");
         passwordField.setPromptText("Password");
 
-        topLine.setStartX(0f);
-        topLine.setEndX(440f);
+        topLine1.setStartX(0f);
+        topLine1.setEndX(25f);
+        topLine2.setStartX(0f);
+        topLine2.setEndX(270f);
+        topLine3.setStartX(0f);
+        topLine3.setEndX(25f);
         bottomLine.setStartX(0f);
-        bottomLine.setEndX(440f);
+        bottomLine.setEndX(465f);
 
         // TODO: Implement CSS
-        topLine.setStyle("-fx-stroke: lightgray");
+        topLine1.setStyle("-fx-stroke: lightgray");
+        topLine2.setStyle("-fx-stroke: lightgray");
+        topLine3.setStyle("-fx-stroke: lightgray");
         bottomLine.setStyle("-fx-stroke: lightgray");
         fileWindow.setStyle("-fx-border-color: whitesmoke");
         fileWindow.setStyle("-fx-faint-focus-color: transparent;" +
@@ -406,8 +417,8 @@ public class FileEncryptor extends Application {
         VBox.setMargin(advSeperatorHBox, new Insets(0, 0, 10, 20));
         HBox.setMargin(advLabelSpacer1, new Insets(13, 0, 0, 0));
         HBox.setMargin(advLabelSpacer2, new Insets(13, 0, 0, 0));
-        HBox.setMargin(windowTitle, new Insets(9, 245, 4, 0));
-        HBox.setMargin(colorAddition, new Insets(0, 88, 0, 0));
+        HBox.setMargin(windowTitle, new Insets(9, 245, 0, 0));
+        HBox.setMargin(colorAddition, new Insets(0, 115, 0, 0));
         HBox.setMargin(closeButtonPane, new Insets(8, 0, 0, 0));
         HBox.setMargin(minimizeButtonPane, new Insets(8, 8, 0, 0));
         HBox.setMargin(decryptButtonPane, new Insets(10, 0, 20, 20));
@@ -420,7 +431,11 @@ public class FileEncryptor extends Application {
         StackPane.setMargin(lockBar1, new Insets(0, 2, 24, 0));
         StackPane.setMargin(lockBar2, new Insets(0, 0, 22, 0));
 
-        VBox.setMargin(topLine, new Insets(30, 20, 15, 20));
+        // VBox.setMargin(new Insets(30, 20, 15, 20));
+        topBarHBox.setPadding(new Insets(30, 20, 0, 20));
+        HBox.setMargin(topLine1, new Insets(7, 5, 0, 3));
+        HBox.setMargin(topLine2, new Insets(7, 5, 0, 5));
+        HBox.setMargin(topLine3, new Insets(7, 0, 0, 5));
         VBox.setMargin(fileWindow, new Insets(0, 20, 0, 20));
         VBox.setMargin(bottomLine, new Insets(15, 20, 0, 20));
 
@@ -430,8 +445,6 @@ public class FileEncryptor extends Application {
 
         fileWindow.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
         fileWindow.setVbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
-
-        fileWindowContents.setSpacing(10);
 
         VBox.setMargin(dropFilesHere, new Insets(160, 0, 0, 150));
 
@@ -659,7 +672,8 @@ public class FileEncryptor extends Application {
         advSeperatorHBox.getChildren().addAll(advLabelSpacer1, advLabel, advLabelSpacer2);
 
         // Right VBox
-        rightVBox.getChildren().addAll(topLine, fileWindow, bottomLine);
+        rightVBox.getChildren().addAll(topBarHBox, fileWindow, bottomLine);
+        topBarHBox.getChildren().addAll(topLine1, fileNameText, topLine2, fileSizeText, topLine3);
         fileWindow.setContent(fileWindowContents);
         fileWindowContents.getChildren().add(dropFilesHere);
 
@@ -778,11 +792,27 @@ public class FileEncryptor extends Application {
 
     private void doDecrypt() {
 
-        for (File inputFile : inputFiles) {
+        for (int count = 0 ; count < inputFiles.size() ; count++) {
             DoDecryption decryptTask = new DoDecryption(password, algorithm, algoSpec, keyStrength,
-                    inputFile, determineOutFile(false, inputFile));
+                    inputFiles.get(count), determineOutFile(false, inputFiles.get(count)));
+
+            fileWidgets.get(count).getProgressProperty().bind(decryptTask.progressProperty());
+
+            decryptTask.setOnSucceeded(e -> {
+                EventHandler<ActionEvent> removeFileWidget = y -> {
+                    fileWindowContents.getChildren().remove(0);
+                    inputFiles.remove(0);
+                    fileWidgets.remove(0);
+                };
+
+                Timeline timeline = new Timeline(new KeyFrame(Duration.millis(750), removeFileWidget));
+                timeline.setCycleCount(0);
+                timeline.play();
+
+            });
 
             executor.execute(decryptTask);
+
         }
     }
 
