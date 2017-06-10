@@ -1,32 +1,37 @@
 ## Welcome!
 
-#### Downloads: [Releases](https://github.com/AWildBeard/FileEncryptor/releases)
+#### [Downloads](https://github.com/AWildBeard/FileEncryptor/releases)
+
+![FileEncryptor](https://github.com/AWildBeard/resources/blob/master/FileEncryptor/resources/fileEncryptor.png?raw=true)
 
 #### The project
 
 This project is aimed at creating a simple to use,
 user friendly, cross platform, file encryption tool
-for the masses. The tool has two modes, simple mode
-advanced mode. Both modes require the selection of
-a file and a password to encrypt the file. Those
-are the only fields that the simple mode requires.
-By default, the simple mode encrypts with
-AES-CBC-PKS5Padding with a 128 bit key. The
-advanced mode offers a few more options, such as the
-ability to encrypt triple des (DESede) along with a
-stronger version of AES (256 bit key). This mode also
-adds the key strength selection field and the Algo
-type field.
+for the masses. 
 
 #### Usage
+Out of the box, the tool is ready to
+be used and encrypts files with strong AES 128bit.
+Simply choose your files, enter a password, then press
+the encrypt button.
+For advanced users, there is and advanced 
+section with more options to customize how the
+encryption of your files is done. 
+By default, the application encrypts/ decrypts with
+AES-CBC-PKS5Padding with a 128 bit key. The
+advanced section offers a few more options, such as the
+ability to encrypt triple des (DESede) along with a
+stronger version of AES (256 bit key). 
+
 In order to use this program, you will need a
 Java runtime installed. They can be found on the
-Oracle website, but come installed on most Windows
-machines.
+[Java Website](https://www.java.com/en/download/).
 
-Once you have a JRE installed simple double click the
-standalone .jar file found on the releases page 
-above and it should launch just fine.
+Once you have Java installed simply double click the
+standalone .jar file found on the 
+[releases](https://github.com/AWildBeard/FileEncryptor/releases) 
+page above and it will launch just fine.
 
 #### Contributing
 
@@ -36,23 +41,25 @@ Fork as you will but match style
 
 Debian based Linux distros:
 If you are on debian, there is a packaged deb for you
-on the releases page.
+on the [releases](https://github.com/AWildBeard/FileEncryptor/releases)
+page.
 
 Other Linux distros:
 You will need to download the standalone .jar file 
-from the releases page and use that to launch
-the program. If your system will not graphically
+from the [releases](https://github.com/AWildBeard/FileEncryptor/releases)
+page and use that to launch the program.
+If your system will not graphically
 launch the .jar file, use from the command line: 
 
 ```java -jar /path/to/fileEncryptor.jar```
 
 to run the .jar file.
 
-You too will need a JRE to run this program however.
-For most distros, there should be a 
-openjdk-8-jre package in your distros repos that 
-you will need to install in addition to the 
-openjfx package. For example:
+You too will need Java installed to run this program 
+however. For most distros, there should be a 
+openjdk-8-jre package and openjfx package
+in your distros repos that 
+you will need to install. For example:
 
 ```sudo apt install openjdk-8-jre openjfx```
 
