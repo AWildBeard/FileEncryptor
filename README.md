@@ -70,7 +70,8 @@ with JavaFX installed in the JRE and there are proven
 speed improvements in the Oracle JRE over the OPENJDK's.
 Arch users may find the Oracle JRE in the AUR
 
-```pacman -S jre```
+```yaourt -S jre```
+```pacaur -S jre```
 
 #### Linux continued
 
