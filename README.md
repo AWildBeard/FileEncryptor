@@ -71,6 +71,7 @@ speed improvements in the Oracle JRE over the OPENJDK's.
 Arch users may find the Oracle JRE in the AUR
 
 ```yaourt -S jre```
+
 ```pacaur -S jre```
 
 #### Linux continued
