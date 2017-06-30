@@ -18,11 +18,18 @@
     -fx-focus-color: transparent;
     -fx-faint-focus-color: transparent;
     -fx-background-color: whitesmoke;
+    -fx-background-radius: 0px;
+}
+.progress-bar > .track {
+    -fx-background-color: derive(gray, 60%);
+    -fx-text-box-border: transparent;
+    -fx-background-radius: 0px;
 }
 .progress-bar, .bar {
-    -fx-control-inner-background: transparent;
-    -fx-padding: 5;
-    -fx-background-insets: 0;
+    -fx-accent: dodgerblue;
+    -fx-padding: 5px;
+    -fx-background-insets: 1;
+    -fx-background-radius: 0px;
 }
 .main-buttons, .white-based-background {
     -fx-fill: whitesmoke;

@@ -62,8 +62,9 @@ public class FileEncryptor extends Application {
 
     // Containers
     private VBox root = new VBox();
-    private HBox titleBar = new HBox(),
-            mainScene = new HBox();
+    private BorderPane titleBar = new BorderPane();
+    private HBox mainScene = new HBox(),
+            titleBarButtonHolder = new HBox();
     private VBox leftVBox = new VBox(),
             rightVBox = new VBox();
     private HBox leftTopHBox = new HBox(),
@@ -382,9 +383,7 @@ public class FileEncryptor extends Application {
         minimizeSymbol.setStrokeWidth(1.75);
 
         leftTopHBox.setSpacing(10);
-        titleBar.setSpacing(2);
         titleBar.setMinHeight(22);
-        titleBar.setAlignment(Pos.TOP_LEFT);
 
         advLabelSpacer1.setStartX(0.0);
         advLabelSpacer1.setEndX(51);
@@ -417,10 +416,6 @@ public class FileEncryptor extends Application {
         VBox.setMargin(advSeperatorHBox, new Insets(0, 0, 10, 20));
         HBox.setMargin(advLabelSpacer1, new Insets(13, 0, 0, 0));
         HBox.setMargin(advLabelSpacer2, new Insets(13, 0, 0, 0));
-        HBox.setMargin(windowTitle, new Insets(9, 245, 0, 0));
-        HBox.setMargin(colorAddition, new Insets(0, 115, 0, 0));
-        HBox.setMargin(closeButtonPane, new Insets(8, 0, 0, 0));
-        HBox.setMargin(minimizeButtonPane, new Insets(8, 8, 0, 0));
         HBox.setMargin(decryptButtonPane, new Insets(10, 0, 20, 20));
         HBox.setMargin(chooseFileButtonPane, new Insets(10, 0, 20, 0));
         HBox.setMargin(encryptButtonPane, new Insets(10, 20, 20, 0));
@@ -447,6 +442,10 @@ public class FileEncryptor extends Application {
         fileWindow.setVbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
 
         VBox.setMargin(dropFilesHere, new Insets(160, 0, 0, 150));
+
+        BorderPane.setMargin(titleBarButtonHolder, new Insets(7, 7f, 0, 0));
+        titleBarButtonHolder.setSpacing(7f);
+        BorderPane.setMargin(windowTitle, new Insets(7f, 0, 0, 0));
 
 
     }
@@ -678,7 +677,10 @@ public class FileEncryptor extends Application {
         root.getChildren().addAll(titleBar, mainScene);
 
         // Title bar
-        titleBar.getChildren().addAll(colorAddition, windowTitle, minimizeButtonPane, closeButtonPane);
+        titleBar.setCenter(windowTitle);
+        titleBar.setLeft(colorAddition);
+        titleBar.setRight(titleBarButtonHolder);
+        titleBarButtonHolder.getChildren().addAll(minimizeButtonPane, closeButtonPane);
         closeButtonPane.getChildren().addAll(closeButton, closeSymbol1, closeSymbol2, closeButtonSealer);
         minimizeButtonPane.getChildren().addAll(minimizeButton, minimizeSymbol, minimizeButtonSealer);
 

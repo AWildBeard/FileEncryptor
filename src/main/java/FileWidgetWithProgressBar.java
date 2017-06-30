@@ -60,7 +60,7 @@ public class FileWidgetWithProgressBar extends HBox {
 
         VBox.setMargin(fileName, new Insets(0, 0, 0, 6));
         this.setPadding(new Insets(20, 0, 0, 0));
-        rightSideFileSize.setPadding(new Insets(17, 0, 0, 3));
+        rightSideFileSize.setPadding(new Insets(19, 0, 0, 3));
         rightSideFileSize.setMinWidth(70);
         rightSideFileSize.setMaxWidth(70);
         rightSideFileSize.setPrefWidth(70);
