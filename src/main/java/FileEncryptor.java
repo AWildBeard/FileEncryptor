@@ -18,10 +18,10 @@ import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.application.Application;
 import javafx.application.Platform;
+import javafx.css.PseudoClass;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;
-import javafx.geometry.Pos;
 import javafx.scene.control.*;
 import javafx.scene.input.Dragboard;
 import javafx.scene.input.MouseButton;
@@ -62,11 +62,15 @@ public class FileEncryptor extends Application {
 
     // Containers
     private VBox root = new VBox();
+
     private BorderPane titleBar = new BorderPane();
+
     private HBox mainScene = new HBox(),
             titleBarButtonHolder = new HBox();
+
     private VBox leftVBox = new VBox(),
             rightVBox = new VBox();
+
     private HBox leftTopHBox = new HBox(),
             advSeperatorHBox = new HBox(),
             algoTypeContainer = new HBox(),
@@ -77,21 +81,26 @@ public class FileEncryptor extends Application {
             bit192Container = new HBox(),
             bit256Container = new HBox(),
             topBarHBox = new HBox();
+
     private StackPane decryptButtonPane = new StackPane(),
             chooseFileButtonPane = new StackPane(),
             encryptButtonPane = new StackPane(),
             closeButtonPane = new StackPane(),
             minimizeButtonPane = new StackPane();
+
     private ScrollPane fileWindow = new ScrollPane();
+
     private VBox fileWindowContents = new VBox();
 
     // Nodes
     private Tooltip chooseFileToolTip = new Tooltip(),
             decryptFileToolTip = new Tooltip(),
             encryptFileToolTip = new Tooltip();
+
     private Text windowTitle = new Text("File Encryptor"),
             fileNameText = new Text("File Name"),
             fileSizeText = new Text("File Size");
+
     private Label keySize = new Label("Encryption Strength"),
             algoType = new Label("Algorithm"),
             AES = new Label("Advanced Encryption"),
@@ -102,6 +111,7 @@ public class FileEncryptor extends Application {
             advLabel = new Label("Advanced"),
             dropFilesHere = new Label("Drag n' Drop files here");
     private PasswordField passwordField = new PasswordField();
+
     private Circle decryptButton = new Circle(),
             decryptButtonSealer = new Circle(),
             chooseFileButton = new Circle(),
@@ -119,12 +129,15 @@ public class FileEncryptor extends Application {
             statusCircle5 = new Circle(),
             statusCircle6 = new Circle(),
             statusCircle7 = new Circle();
+
     private Rectangle colorAddition = new Rectangle(),
             colorAddition2 = new Rectangle(),
             lockBase1 = new Rectangle(),
             lockBase2 = new Rectangle();
+
     private Arc lockBar1 = new Arc(),
             lockBar2 = new Arc();
+
     private Line addFileSymbol1 = new Line(),
             addFileSymbol2 = new Line(),
             closeSymbol1 = new Line(),
@@ -137,11 +150,14 @@ public class FileEncryptor extends Application {
             topLine3 = new Line(),
             bottomLine = new Line();
 
+    // Styling items
+    private final PseudoClass errorClass = PseudoClass.getPseudoClass("empty");
 
     // Encryption items
     private String aes1 = "AES/CBC/PKCS5Padding",
             desede1 = "DESede/CBC/PKCS5Padding",
             algoSpec, algorithm, password;
+
     private Integer keyStrength,
             fileCount;
 
@@ -267,6 +283,7 @@ public class FileEncryptor extends Application {
         decryptButton.getStyleClass().add("main-buttons");
         decryptButtonSealer.getStyleClass().add("main-button-sealer");
         chooseFileButton.getStyleClass().add("main-buttons");
+        chooseFileButton.setId("choose-file-button");
         chooseFileButtonSealer.getStyleClass().add("main-button-sealer");
         encryptButton.getStyleClass().add("main-buttons");
         encryptButtonSealer.getStyleClass().add("main-button-sealer");
@@ -505,16 +522,23 @@ public class FileEncryptor extends Application {
         decryptButtonSealer.onMouseEnteredProperty().bind(decryptButton.onMouseEnteredProperty());
         decryptButtonSealer.onMouseExitedProperty().bind(decryptButton.onMouseExitedProperty());
         decryptButtonSealer.setOnMouseClicked(e -> {
-            password = passwordField.getText();
-            doDecrypt();
+            if (isReady())
+                doDecrypt();
+
         });
         Tooltip.install(decryptButtonSealer, decryptFileToolTip);
 
         // Choose file button functionality
-        chooseFileButton.setOnMouseEntered(e ->
-            chooseFileButton.setStyle(
-                    "-fx-effect: dropshadow(three-pass-box, derive(whitesmoke, 20%), 10, 0, 0, 0)"
-            )
+        chooseFileButton.setOnMouseEntered(e -> {
+            if (chooseFileButton.getPseudoClassStates().contains(errorClass))
+                chooseFileButton.setStyle(
+                        ""
+                );
+
+                chooseFileButton.setStyle(
+                        "-fx-effect: dropshadow(three-pass-box, derive(whitesmoke, 20%), 10, 0, 0, 0)"
+                );
+            }
         );
         chooseFileButton.setOnMouseExited(e -> chooseFileButton.setStyle("-fx-effect: null"));
         chooseFileButtonSealer.onMouseEnteredProperty().bind(chooseFileButton.onMouseEnteredProperty());
@@ -532,8 +556,9 @@ public class FileEncryptor extends Application {
         encryptButtonSealer.onMouseEnteredProperty().bind(encryptButton.onMouseEnteredProperty());
         encryptButtonSealer.onMouseExitedProperty().bind(encryptButton.onMouseExitedProperty());
         encryptButtonSealer.setOnMouseClicked(e -> {
-            password = passwordField.getText();
-            doEncrypt();
+            if (isReady())
+                doEncrypt();
+
         });
         Tooltip.install(encryptButtonSealer, encryptFileToolTip);
 
@@ -783,6 +808,47 @@ public class FileEncryptor extends Application {
         }
 
         return outputFile;
+    }
+
+    private boolean isReady() {
+        boolean falseFlag = false;
+
+        if (! (passwordField.getText().length() > 0)) {
+            passwordField.pseudoClassStateChanged(errorClass, true);
+            falseFlag = true;
+
+        }
+        else {
+            passwordField.pseudoClassStateChanged(errorClass, false);
+            password = passwordField.getText();
+
+        }
+
+        if (! (inputFiles.size() >= 1)) {
+            chooseFileButton.pseudoClassStateChanged(errorClass, true);
+            chooseFileButton.setOnMouseEntered(e ->
+                    chooseFileButton.setStyle(
+                            "-fx-effect: dropshadow(three-pass-box, derive(red, 20%), 10, 0, 0, 0)"
+                    )
+            );
+            falseFlag = true;
+
+        }
+        else {
+            chooseFileButton.pseudoClassStateChanged(errorClass, false);
+            chooseFileButton.setOnMouseEntered(e ->
+                    chooseFileButton.setStyle(
+                            "-fx-effect: dropshadow(three-pass-box, derive(whitesmoke, 20%), 10, 0, 0, 0)"
+                    )
+            );
+
+        }
+
+        if (falseFlag)
+            return false;
+
+        return true;
+
     }
 
     private void doFinalCrypAction() {
