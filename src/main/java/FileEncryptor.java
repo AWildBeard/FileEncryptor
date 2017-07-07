@@ -522,7 +522,7 @@ public class FileEncryptor extends Application {
         decryptButtonSealer.onMouseEnteredProperty().bind(decryptButton.onMouseEnteredProperty());
         decryptButtonSealer.onMouseExitedProperty().bind(decryptButton.onMouseExitedProperty());
         decryptButtonSealer.setOnMouseClicked(e -> {
-            if (isReady())
+            if (isReady(true, true))
                 doDecrypt();
 
         });
@@ -556,7 +556,7 @@ public class FileEncryptor extends Application {
         encryptButtonSealer.onMouseEnteredProperty().bind(encryptButton.onMouseEnteredProperty());
         encryptButtonSealer.onMouseExitedProperty().bind(encryptButton.onMouseExitedProperty());
         encryptButtonSealer.setOnMouseClicked(e -> {
-            if (isReady())
+            if (isReady(true, true))
                 doEncrypt();
 
         });
@@ -690,9 +690,15 @@ public class FileEncryptor extends Application {
                 } while (startingLocation < inputFiles.size());
             }
 
+            isReady(false, true);
+
             e.setDropCompleted(sucess);
             e.consume();
 
+        });
+
+        passwordField.setOnKeyReleased(e -> {
+            isReady(true, false);
         });
 
     }
@@ -771,6 +777,8 @@ public class FileEncryptor extends Application {
 
                 } while (startingLocation < inputFiles.size());
             }
+
+            isReady(false, true);
         }
     }
 
@@ -810,44 +818,44 @@ public class FileEncryptor extends Application {
         return outputFile;
     }
 
-    private boolean isReady() {
-        boolean falseFlag = false;
+    private boolean isReady(boolean passwordVerify, boolean fileVerify) {
+        boolean falseFlag = true;
 
-        if (! (passwordField.getText().length() > 0)) {
-            passwordField.pseudoClassStateChanged(errorClass, true);
-            falseFlag = true;
+        if (passwordVerify) {
+            if (!(passwordField.getText().length() > 0)) {
+                passwordField.pseudoClassStateChanged(errorClass, true);
+                falseFlag = false;
 
-        }
-        else {
-            passwordField.pseudoClassStateChanged(errorClass, false);
-            password = passwordField.getText();
+            } else {
+                passwordField.pseudoClassStateChanged(errorClass, false);
+                password = passwordField.getText();
 
-        }
-
-        if (! (inputFiles.size() >= 1)) {
-            chooseFileButton.pseudoClassStateChanged(errorClass, true);
-            chooseFileButton.setOnMouseEntered(e ->
-                    chooseFileButton.setStyle(
-                            "-fx-effect: dropshadow(three-pass-box, derive(red, 20%), 10, 0, 0, 0)"
-                    )
-            );
-            falseFlag = true;
-
-        }
-        else {
-            chooseFileButton.pseudoClassStateChanged(errorClass, false);
-            chooseFileButton.setOnMouseEntered(e ->
-                    chooseFileButton.setStyle(
-                            "-fx-effect: dropshadow(three-pass-box, derive(whitesmoke, 20%), 10, 0, 0, 0)"
-                    )
-            );
-
+            }
         }
 
-        if (falseFlag)
-            return false;
+        if (fileVerify) {
+            if (!(inputFiles.size() >= 1)) {
+                chooseFileButton.pseudoClassStateChanged(errorClass, true);
+                chooseFileButton.setOnMouseEntered(e ->
+                        chooseFileButton.setStyle(
+                                "-fx-effect: dropshadow(three-pass-box, derive(red, 20%), 10, 0, 0, 0)"
+                        )
+                );
+                falseFlag = false;
 
-        return true;
+            } else {
+                chooseFileButton.pseudoClassStateChanged(errorClass, false);
+                chooseFileButton.setOnMouseEntered(e ->
+                        chooseFileButton.setStyle(
+                                "-fx-effect: dropshadow(three-pass-box, derive(whitesmoke, 20%), 10, 0, 0, 0)"
+                        )
+                );
+
+            }
+
+        }
+
+        return falseFlag;
 
     }
 
