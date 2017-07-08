@@ -52,6 +52,8 @@ public class DoDecryption extends Task{
             InvalidParameterSpecException, InvalidKeyException, BadPaddingException,
             InvalidAlgorithmParameterException, IOException, IllegalBlockSizeException {
 
+        this.setOnFailed(e -> outputFile.delete());
+
         updateProgress(1, 3);
 
         CryptoUtils decryptFile = new CryptoUtils(password, Cipher.DECRYPT_MODE,

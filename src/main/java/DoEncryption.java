@@ -53,6 +53,8 @@ public class DoEncryption extends Task {
             InvalidParameterSpecException, InvalidKeyException,
             InvalidAlgorithmParameterException, IOException {
 
+        this.setOnFailed(e -> outputFile.delete());
+
         updateProgress(1, 3);
 
         CryptoUtils encryptFile = new CryptoUtils(password, Cipher.ENCRYPT_MODE,

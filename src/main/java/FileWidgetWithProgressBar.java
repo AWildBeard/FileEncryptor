@@ -48,7 +48,7 @@ public class FileWidgetWithProgressBar extends HBox {
         if (result.length() > 29) {
             result = fileName.getName().substring(0, 25) + "...";
         }
-        this.fileName =  new Text(result);
+        this.fileName = new Text(result);
 
     }
 
@@ -61,9 +61,6 @@ public class FileWidgetWithProgressBar extends HBox {
         VBox.setMargin(fileName, new Insets(0, 0, 0, 6));
         this.setPadding(new Insets(20, 0, 0, 0));
         rightSideFileSize.setPadding(new Insets(19, 0, 0, 3));
-        rightSideFileSize.setMinWidth(70);
-        rightSideFileSize.setMaxWidth(70);
-        rightSideFileSize.setPrefWidth(70);
 
     }
 
@@ -72,13 +69,16 @@ public class FileWidgetWithProgressBar extends HBox {
 
         String fileSizeEnding = "B";
 
-        if (fileSize > 1000000) {
-            fileSizeEnding = "mB";
+        if (fileSize > 1000000000) {
+            fileSizeEnding = "GB";
+            fileSize /= 1000000000;
+        }
+        else if (fileSize > 1000000) {
+            fileSizeEnding = "MB";
             fileSize /= 1000000;
         }
-
-        if (fileSize > 1000) {
-            fileSizeEnding = "kB";
+        else if (fileSize > 1000) {
+            fileSizeEnding = "KB";
             fileSize /= 1000;
         }
 

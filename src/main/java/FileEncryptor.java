@@ -23,6 +23,7 @@ import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.scene.control.*;
+import javafx.scene.image.Image;
 import javafx.scene.input.Dragboard;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.TransferMode;
@@ -311,6 +312,13 @@ public class FileEncryptor extends Application {
 
     private void setVisibleProperties() {
 
+        primaryStage.getIcons().addAll(
+                new Image(FileEncryptor.class.getResourceAsStream("img/file-encryptor.32.png")),
+                new Image(FileEncryptor.class.getResourceAsStream("img/file-encryptor.48.png")),
+                new Image(FileEncryptor.class.getResourceAsStream("img/file-encryptor.64.png")),
+                new Image(FileEncryptor.class.getResourceAsStream("img/file-encryptor.128.png"))
+        );
+
         chooseFileToolTip.setText("Choose files");
         decryptFileToolTip.setText("Decrypt files");
         encryptFileToolTip.setText("Encrypt files");
@@ -469,6 +477,7 @@ public class FileEncryptor extends Application {
 
     private void setInteractions() {
 
+        // Visible focus property for user feedback
         this.primaryStage.focusedProperty().addListener(e -> {
             if (primaryStage.isFocused()) {
                 closeButton.setStyle("-fx-fill: red");
@@ -482,6 +491,7 @@ public class FileEncryptor extends Application {
             }
         });
 
+        // Moveable titlebar propertys
         titleBar.setOnMousePressed(e -> {
             if (e.getButton() != MouseButton.MIDDLE) {
                 mouseDragStartX = e.getX();
@@ -887,6 +897,17 @@ public class FileEncryptor extends Application {
 
     }
 
+    private void doErrorAction(String message) {
+        ErrorWindow errorWindow = new ErrorWindow();
+
+        errorWindow.addMessage(message);
+
+        errorWindow.show();
+
+        doFinalCrypAction();
+
+    }
+
     // Encrypt method button implementation for the encrypt button.
     // This method also determines the name of the file to write/ read from
     private void doEncrypt() {
@@ -903,14 +924,19 @@ public class FileEncryptor extends Application {
 
         // For each file the user has entered, encrypt and bind the progress to the encryption progress
         for (int count = 0 ; count < inputFiles.size() ; count++) {
+            File inputFile = inputFiles.get(count);
+            File outputFile = determineOutFile(true, inputFile);
+
             DoEncryption encryptTask = new DoEncryption(password, algorithm, algoSpec, keyStrength,
-                    inputFiles.get(count), determineOutFile(true, inputFiles.get(count)));
+                    inputFile, outputFile);
 
             // Bind progress to encryption
-            fileWidgets.get(count).getProgressProperty().bind(encryptTask.progressProperty());
+            FileWidgetWithProgressBar fileWidget = fileWidgets.get(count);
+            fileWidget.getProgressProperty().bind(encryptTask.progressProperty());
 
             // Remember to remove the files after action
             encryptTask.setOnSucceeded(e -> doFinalCrypAction());
+            encryptTask.setOnFailed(e -> doErrorAction("Failed to encrypt file: " + inputFile.getName()));
 
             // MultiThread to keep GUI alive!
             executor.execute(encryptTask);
@@ -931,14 +957,19 @@ public class FileEncryptor extends Application {
 
         // For each file the user has entered, decrypt and bind the progress to the decryption progress
         for (int count = 0 ; count < inputFiles.size() ; count++) {
+            File inputFile = inputFiles.get(count);
+            File outputFile = determineOutFile(true, inputFile);
+
             DoDecryption decryptTask = new DoDecryption(password, algorithm, algoSpec, keyStrength,
-                    inputFiles.get(count), determineOutFile(false, inputFiles.get(count)));
+                    inputFile, outputFile);
 
             // Bind progress to decryption
-            fileWidgets.get(count).getProgressProperty().bind(decryptTask.progressProperty());
+            FileWidgetWithProgressBar fileWidget = fileWidgets.get(count);
+            fileWidget.getProgressProperty().bind(decryptTask.progressProperty());
 
             // Remember to remove the files after action
             decryptTask.setOnSucceeded(e -> doFinalCrypAction());
+            decryptTask.setOnFailed(e -> doErrorAction("Failed to decrypt file " + inputFile.getName()));
 
             // MultiThread to keep GUI alive!
             executor.execute(decryptTask);
