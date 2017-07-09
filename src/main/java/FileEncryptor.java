@@ -555,7 +555,6 @@ public class FileEncryptor extends Application {
 
         // Choose file button functionality
         chooseFileButton.setOnMouseEntered(e -> {
-            if (chooseFileButton.getPseudoClassStates().contains(errorClass))
                 chooseFileButton.setStyle(
                         "-fx-effect: dropshadow(three-pass-box, derive(whitesmoke, 20%), 10, 0, 0, 0)"
 
