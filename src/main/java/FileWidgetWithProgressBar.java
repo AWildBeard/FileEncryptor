@@ -23,16 +23,25 @@ import javafx.scene.text.Text;
 
 import java.io.File;
 
+/*
+ * Description: Simple file widget that holds the file name to a certain length,
+ * progress bar to a certain length, and file size.
+ */
+
 public class FileWidgetWithProgressBar extends HBox {
 
     private File file;
+
     private VBox leftSide = new VBox();
+
     private HBox rightSide = new HBox();
+
     private VBox rightSideFileSize = new VBox();
+
     private ProgressBar fileProgress = new ProgressBar();
+
     private Text fileName,
             fileSizeText;
-
 
     public FileWidgetWithProgressBar(File file) {
         this.file = file;
@@ -52,11 +61,16 @@ public class FileWidgetWithProgressBar extends HBox {
 
     }
 
+    public void setProgressBarWidth(double width) {
+        fileProgress.setMinWidth(width);
+        fileProgress.setMaxWidth(width);
+        fileProgress.setPrefWidth(width);
+
+    }
+
     private void setVisualProperties() {
         fileProgress.setProgress(0.0);
-        fileProgress.setMinWidth(380f);
-        fileProgress.setMaxWidth(380f);
-        fileProgress.setPrefWidth(380f);
+        setProgressBarWidth(390.0);
 
         VBox.setMargin(fileName, new Insets(0, 0, 0, 6));
         this.setPadding(new Insets(20, 0, 0, 0));

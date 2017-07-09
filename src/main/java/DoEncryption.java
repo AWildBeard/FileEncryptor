@@ -27,14 +27,17 @@ import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.InvalidParameterSpecException;
 
+/*
+ * Description: An abstraction between the Crypto class and the
+ * main GUI. Extends Task to be run in a thread and for the progress
+ * properties.
+ */
+
 public class DoEncryption extends Task {
 
-    private File inputFile,
-                 outputFile;
+    private File inputFile, outputFile;
 
-    private String password,
-                   algorithm,
-                   algoSpec;
+    private String password, algorithm, algoSpec;
 
     private Integer keyStrength;
 
@@ -53,15 +56,15 @@ public class DoEncryption extends Task {
             InvalidParameterSpecException, InvalidKeyException,
             InvalidAlgorithmParameterException, IOException {
 
-        this.setOnFailed(e -> outputFile.delete());
-
         updateProgress(1, 3);
 
+        // Initialize the cryptography library
         CryptoUtils encryptFile = new CryptoUtils(password, Cipher.ENCRYPT_MODE,
                 algorithm, algoSpec, keyStrength);
 
         updateProgress(2, 3);
 
+        // Get an initialized cipher and perform the encryption
         encryptFile.doEncryption(encryptFile.getInitializedCipher(), inputFile, outputFile);
 
         updateProgress(3, 3);

@@ -1,3 +1,19 @@
+/*
+ * Copyright 2017 Michael Mitchell
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 import javafx.geometry.Insets;
 import javafx.scene.Node;
 import javafx.scene.Scene;
@@ -11,34 +27,53 @@ import javafx.scene.text.Text;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 
+/*
+ * Description: Simple error window that automatically resizes based on the messages
+ * sent to the window via addMesage() and the 1-arg constructor
+ */
+
 public class ErrorWindow {
 
     private static Stage primaryStage = new Stage();
+
     private static ScrollPane scrollPane = new ScrollPane();
+
     private static VBox contents = new VBox(),
             rootPane = new VBox();
+
     private static HBox menuButtonHolder = new HBox();
+
     private static BorderPane titleBar = new BorderPane();
+
     private static StackPane closeButtonRoot = new StackPane(),
             minimizeButtonRoot = new StackPane();
+
     private static Circle closeButton = new Circle(),
             minimizeButton = new Circle(),
             closeButtonSealer = new Circle(),
             minimizeButtonSealer = new Circle();
+
     private static Text windowTitle = new Text("Error Log");
+
     private static Scene root = new Scene(rootPane, 100, 250);
+
     private static boolean isInitialized = false;
+
     private static double mouseDragStartX, mouseDragStartY;
+
     private static Line closeSymbol1 = new Line(),
             closeSymbol2 = new Line(),
             minimizeSymbol = new Line();
 
+    // 0-arg constructor just to initialize
     public ErrorWindow() { }
 
+    // 1-arg constructor to add a message to the window prior to opening the stage
     public ErrorWindow(String initialErrorMessage) {
         addMessage(initialErrorMessage);
 
     }
+
     private void initUI() {
         primaryStage.getIcons().addAll(
                 new Image(FileEncryptor.class.getResourceAsStream("img/file-encryptor.32.png")),
@@ -141,6 +176,7 @@ public class ErrorWindow {
 
         closeButtonSealer.setOnMouseClicked(e -> close());
         minimizeButtonSealer.setOnMouseClicked(e -> primaryStage.hide());
+
     }
 
     private void updateWidth() { primaryStage.setWidth(contents.getBoundsInParent().getWidth() + 60); }
@@ -158,7 +194,6 @@ public class ErrorWindow {
     }
 
     public void close() {
-        System.out.println("Closing window");
         primaryStage.close();
 
     }
@@ -177,8 +212,8 @@ public class ErrorWindow {
     }
 
     public void removeAllMessages() {
-        System.out.println("Removing error messages");
         contents.getChildren().removeAll(contents.getChildren());
+
     }
 
     public void removeMessage(String message) {
@@ -191,5 +226,6 @@ public class ErrorWindow {
         }
 
         updateWidth();
+
     }
 }

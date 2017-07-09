@@ -44,8 +44,8 @@ import java.util.concurrent.*;
  * Description: This is a simple graphical file encryption tool
  */
 
-
 public class FileEncryptor extends Application {
+
     // Stage
     private Stage primaryStage;
 
@@ -188,15 +188,19 @@ public class FileEncryptor extends Application {
         EventHandler<ActionEvent> animate = e -> {
             dropAnimationCount++;
             VBox.setMargin(keySizeContainer, new Insets(dropAnimationCount, 0, 0, 30));
+
         };
 
         Timeline dropAnimationTimeLine = new Timeline(
                 new KeyFrame(Duration.millis(4), animate)
+
         );
 
         dropAnimationTimeLine.setOnFinished(e -> {
             leftVBox.getChildren().addAll(4, Arrays.asList(AESContainer, DESContainer));
-            VBox.setMargin(keySizeContainer, new Insets(VBox.getMargin(keySizeContainer).getTop() - 50, 0, 0, 30));
+            VBox.setMargin(keySizeContainer, new Insets(
+                    VBox.getMargin(keySizeContainer).getTop() - 50, 0, 0, 30));
+
         });
 
         dropAnimationTimeLine.setCycleCount(55);
@@ -205,10 +209,12 @@ public class FileEncryptor extends Application {
         EventHandler<ActionEvent> reverse = e -> {
             dropAnimationCount--;
             VBox.setMargin(keySizeContainer, new Insets(dropAnimationCount, 0, 0, 30));
+
         };
 
         Timeline dropAnimationTileLineReverse = new Timeline(
                 new KeyFrame(Duration.millis(4), reverse)
+
         );
 
         dropAnimationTileLineReverse.setCycleCount(55);
@@ -216,18 +222,21 @@ public class FileEncryptor extends Application {
         algoType.setOnMouseClicked(e -> {
             if (VBox.getMargin(keySizeContainer).getTop() == 0) {
                 dropAnimationTimeLine.play();
+
             }
             else {
                 if (VBox.getMargin(keySizeContainer).getTop() != 55 - 50) {
                     dropAnimationTileLineReverse.setCycleCount((int) VBox.getMargin(keySizeContainer).getTop());
                     dropAnimationTimeLine.stop();
                     dropAnimationTileLineReverse.play();
+
                 }
                 else {
                     dropAnimationTileLineReverse.setCycleCount(55);
                     leftVBox.getChildren().removeAll(Arrays.asList(AESContainer, DESContainer));
                     VBox.setMargin(keySizeContainer, new Insets(VBox.getMargin(keySizeContainer).getTop() + 55, 0, 0, 30));
                     dropAnimationTileLineReverse.play();
+
                 }
             }
 
@@ -248,6 +257,7 @@ public class FileEncryptor extends Application {
         // Request the focus so the interface is nice and unfocused
         // for first time viewing
         windowTitle.requestFocus();
+
     }
 
     // Shutdown the thread executor when the application is closed
@@ -257,7 +267,6 @@ public class FileEncryptor extends Application {
     public static void main(String[] args) { launch(args); }
 
     private void initUI() {
-
         assignStyleClass();
         setVisibleProperties();
         setInteractions();
@@ -317,6 +326,7 @@ public class FileEncryptor extends Application {
                 new Image(FileEncryptor.class.getResourceAsStream("img/file-encryptor.48.png")),
                 new Image(FileEncryptor.class.getResourceAsStream("img/file-encryptor.64.png")),
                 new Image(FileEncryptor.class.getResourceAsStream("img/file-encryptor.128.png"))
+
         );
 
         chooseFileToolTip.setText("Choose files");
@@ -483,11 +493,13 @@ public class FileEncryptor extends Application {
                 closeButton.setStyle("-fx-fill: red");
                 minimizeButton.setStyle("-fx-fill: goldenrod");
                 windowTitle.setStyle("-fx-fill: black");
+
             }
             else {
                 closeButton.setStyle("-fx-fill: dimgrey");
                 minimizeButton.setStyle("-fx-fill: dimgrey");
                 windowTitle.setStyle("-fx-fill: dimgrey");
+
             }
         });
 
@@ -496,12 +508,14 @@ public class FileEncryptor extends Application {
             if (e.getButton() != MouseButton.MIDDLE) {
                 mouseDragStartX = e.getX();
                 mouseDragStartY = e.getY();
+
             }
         });
         titleBar.setOnMouseDragged(e -> {
             if (e.getButton() != MouseButton.MIDDLE) {
                 titleBar.getScene().getWindow().setX(e.getScreenX() - mouseDragStartX);
                 titleBar.getScene().getWindow().setY(e.getScreenY() - mouseDragStartY);
+
             }
         });
 
@@ -526,6 +540,7 @@ public class FileEncryptor extends Application {
         decryptButton.setOnMouseEntered(e ->
             decryptButton.setStyle(
                     "-fx-effect: dropshadow(three-pass-box, derive(whitesmoke, 20%), 10, 0, 0, 0)"
+
             )
         );
         decryptButton.setOnMouseExited(e -> decryptButton.setStyle("-fx-effect: null"));
@@ -542,11 +557,8 @@ public class FileEncryptor extends Application {
         chooseFileButton.setOnMouseEntered(e -> {
             if (chooseFileButton.getPseudoClassStates().contains(errorClass))
                 chooseFileButton.setStyle(
-                        ""
-                );
-
-                chooseFileButton.setStyle(
                         "-fx-effect: dropshadow(three-pass-box, derive(whitesmoke, 20%), 10, 0, 0, 0)"
+
                 );
             }
         );
@@ -560,6 +572,7 @@ public class FileEncryptor extends Application {
         encryptButton.setOnMouseEntered(e ->
             encryptButton.setStyle(
                     "-fx-effect: dropshadow(three-pass-box, derive(whitesmoke, 20%), 10, 0, 0, 0)"
+
             )
         );
         encryptButton.setOnMouseExited(e -> encryptButton.setStyle("-fx-effect: null;"));
@@ -573,14 +586,12 @@ public class FileEncryptor extends Application {
         Tooltip.install(encryptButtonSealer, encryptFileToolTip);
 
         AES.setOnMouseClicked(e -> {
-
             algorithm = aes1;
             algoSpec = "AES";
             statusCircle1.setStyle("-fx-fill: green");
             statusCircle2.setStyle("-fx-fill: green");
             statusCircle3.setStyle("-fx-fill: gray");
             if (! (keyStrength == 128 ||  keyStrength == 256)) {
-
                 keyStrength = null;
                 statusCircle4.setStyle("-fx-fill: orange");
                 statusCircle5.setStyle("-fx-fill: orange");
@@ -592,7 +603,6 @@ public class FileEncryptor extends Application {
         });
 
         DES.setOnMouseClicked(e -> {
-
             algorithm = desede1;
             algoSpec = "DESede";
             statusCircle1.setStyle("-fx-fill: green");
@@ -607,7 +617,6 @@ public class FileEncryptor extends Application {
         });
 
         bit128.setOnMouseClicked(e -> {
-
             keyStrength = 128;
             algorithm = aes1;
             algoSpec = "AES";
@@ -622,7 +631,6 @@ public class FileEncryptor extends Application {
         });
 
         bit192.setOnMouseClicked(e -> {
-
             keyStrength = 192;
             algorithm = desede1;
             algoSpec = "DESede";
@@ -637,7 +645,6 @@ public class FileEncryptor extends Application {
         });
 
         bit256.setOnMouseClicked(e -> {
-
             keyStrength = 256;
             algorithm = aes1;
             algoSpec = "AES";
@@ -660,6 +667,7 @@ public class FileEncryptor extends Application {
                 statusCircle6.setVisible(false);
                 bit256.setVisible(false);
                 statusCircle7.setVisible(false);
+
             }
             else {
                 bit128.setVisible(true);
@@ -668,6 +676,7 @@ public class FileEncryptor extends Application {
                 statusCircle6.setVisible(true);
                 bit256.setVisible(true);
                 statusCircle7.setVisible(true);
+
             }
         });
 
@@ -675,9 +684,11 @@ public class FileEncryptor extends Application {
             Dragboard db = e.getDragboard();
             if (db.hasFiles()) {
                 e.acceptTransferModes(TransferMode.COPY);
+
             }
             else {
                 e.consume();
+
             }
         });
 
@@ -709,12 +720,12 @@ public class FileEncryptor extends Application {
 
         passwordField.setOnKeyReleased(e -> {
             isReady(true, false);
+
         });
 
     }
 
     private void addNodesToParents() {
-
         root.getChildren().addAll(titleBar, mainScene);
 
         // Title bar
@@ -789,6 +800,7 @@ public class FileEncryptor extends Application {
             }
 
             isReady(false, true);
+
         }
     }
 
@@ -808,12 +820,12 @@ public class FileEncryptor extends Application {
 
             else {
                 outputFile = new File(inputFile.getAbsolutePath() + ".encrypted");
+
             }
 
         }
 
         else {
-
             if (!inputFile.toString().contains(".encrypted"))
                 throw new IllegalArgumentException("Not a file encrypted by this program");
 
@@ -826,6 +838,7 @@ public class FileEncryptor extends Application {
         }
 
         return outputFile;
+
     }
 
     private boolean isReady(boolean passwordVerify, boolean fileVerify) {
@@ -849,6 +862,7 @@ public class FileEncryptor extends Application {
                 chooseFileButton.setOnMouseEntered(e ->
                         chooseFileButton.setStyle(
                                 "-fx-effect: dropshadow(three-pass-box, derive(red, 20%), 10, 0, 0, 0)"
+
                         )
                 );
                 falseFlag = false;
@@ -858,6 +872,7 @@ public class FileEncryptor extends Application {
                 chooseFileButton.setOnMouseEntered(e ->
                         chooseFileButton.setStyle(
                                 "-fx-effect: dropshadow(three-pass-box, derive(whitesmoke, 20%), 10, 0, 0, 0)"
+
                         )
                 );
 
@@ -899,11 +914,8 @@ public class FileEncryptor extends Application {
 
     private void doErrorAction(String message) {
         ErrorWindow errorWindow = new ErrorWindow();
-
         errorWindow.addMessage(message);
-
         errorWindow.show();
-
         doFinalCrypAction();
 
     }
@@ -936,10 +948,15 @@ public class FileEncryptor extends Application {
 
             // Remember to remove the files after action
             encryptTask.setOnSucceeded(e -> doFinalCrypAction());
-            encryptTask.setOnFailed(e -> doErrorAction("Failed to encrypt file: " + inputFile.getName()));
+            encryptTask.setOnFailed(e -> {
+                doErrorAction("Failed to encrypt file: " + inputFile.getName());
+                outputFile.delete();
+
+            });
 
             // MultiThread to keep GUI alive!
             executor.execute(encryptTask);
+
         }
     }
 
@@ -958,7 +975,7 @@ public class FileEncryptor extends Application {
         // For each file the user has entered, decrypt and bind the progress to the decryption progress
         for (int count = 0 ; count < inputFiles.size() ; count++) {
             File inputFile = inputFiles.get(count);
-            File outputFile = determineOutFile(true, inputFile);
+            File outputFile = determineOutFile(false, inputFile);
 
             DoDecryption decryptTask = new DoDecryption(password, algorithm, algoSpec, keyStrength,
                     inputFile, outputFile);
@@ -969,7 +986,11 @@ public class FileEncryptor extends Application {
 
             // Remember to remove the files after action
             decryptTask.setOnSucceeded(e -> doFinalCrypAction());
-            decryptTask.setOnFailed(e -> doErrorAction("Failed to decrypt file " + inputFile.getName()));
+            decryptTask.setOnFailed(e -> {
+                doErrorAction("Failed to decrypt file " + inputFile.getName());
+                outputFile.delete();
+
+            });
 
             // MultiThread to keep GUI alive!
             executor.execute(decryptTask);
