@@ -777,6 +777,7 @@ public class FileEncryptor extends Application {
         Stage secondaryStage = new Stage(StageStyle.UTILITY);
 
         int startingLocation = 0;
+        boolean cancelled = false;
 
         // Try and get a file from the file chooser, fails if the user cancels choosing a file
         try {
@@ -784,6 +785,8 @@ public class FileEncryptor extends Application {
                 inputFiles.addAll(fileChooser.showOpenMultipleDialog(secondaryStage));
 
         } catch (Exception fileChooserException) {
+            // Detect cancel button pressed
+            cancelled = true;
             // Do nothing
 
         } finally {
@@ -799,7 +802,8 @@ public class FileEncryptor extends Application {
                 } while (startingLocation < inputFiles.size());
             }
 
-            isReady(false, true);
+            if (! cancelled)
+                isReady(false, true);
 
         }
     }
