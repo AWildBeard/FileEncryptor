@@ -69,20 +69,14 @@ install the package from the command line.
 
 - Arch Linux:
 
-If you do not have a Java runtime with JavaFX installed,
-I recommend installing the official Oracle Java Runtime
-(that bundles JavaFX by default)
-from the AUR.
+This project is packaged for the AUR using ALL open source technologies.
+To get it:
 
-> yaourt -S jre
+```yaourt -S file-encryptor```
 
 or/ if you use pacaur:
 
-> pacaur -S jre
-
-Then download the ".jar" file from the
-[releases](https://github.com/AWildBeard/FileEncryptor/releases)
-page and double click it to launch.
+```pacaur -S file-encryptor```
 
 - Red Hat based distros (Fedora):
 
